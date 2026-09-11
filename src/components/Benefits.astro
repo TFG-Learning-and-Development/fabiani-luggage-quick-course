@@ -1,0 +1,18 @@
+---
+import { ArrowRight } from '@lucide/astro';
+import { course } from '../content/course';
+import SectionHeading from './SectionHeading.astro';
+---
+<section id="product-basics" class="section wrap" aria-labelledby="features-title" data-course-section>
+  <SectionHeading number="04" id="features-title" title={course.features.title} introduction={course.features.introduction} />
+  <div class="benefits-head" aria-hidden="true"><span>Product feature</span><span></span><span>Functional benefit</span><span></span><span>Customer connection</span></div>
+  <div class="benefits-list">
+    {course.features.rows.map(row => <article class="benefit-row">
+      <div class="feature"><span class="mobile-label">Product feature</span><h3>{row.feature}</h3></div>
+      <ArrowRight class="connector" aria-hidden="true" />
+      <div class="functional"><span class="mobile-label">Functional benefit</span><p>{row.benefit}</p></div>
+      <ArrowRight class="connector" aria-hidden="true" />
+      <div class="connection"><span class="mobile-label">Customer connection</span><p>{row.connection}</p></div>
+    </article>)}
+  </div>
+</section>

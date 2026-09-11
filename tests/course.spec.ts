@@ -1,0 +1,275 @@
+import { test, expect, type Page } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
+import { course, questions, cases, conversation } from '../src/content/course';
+import { config } from '../src/config';
+
+const start = async (page: Page) => {
+  await page.goto('./');
+  await expect(page.locator('[data-assessment]')).toHaveAttribute('data-enhanced', 'true');
+};
+const answer = async (page: Page, index: number, option: number) => {
+  await page.locator(`[data-question="${index}"] input`).nth(option).check();
+  await page.getByRole('button', { name: 'Check answer', exact: true }).click();
+};
+
+test('all supplied instructional content and local assets render', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await start(page);
+  for (const paragraph of course.overview.paragraphs) await expect(page.getByText(paragraph, { exact: true })).toBeVisible();
+  for (const row of course.features.rows) {
+    for (const text of Object.values(row)) await expect(page.getByText(text, { exact: true })).toBeVisible();
+  }
+  for (const step of course.selling.steps) {
+    await expect(page.getByText(step.action, { exact: true })).toBeVisible();
+    await expect(page.getByText(step.benefit, { exact: true })).toBeVisible();
+  }
+  await expect(page.getByText(course.range.warning, { exact: true })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Return to People Connect' })).toHaveCount(0);
+  const images = await page.locator('img').evaluateAll(async elements => {
+    const images = elements as HTMLImageElement[];
+    await Promise.all(images.map(async image => { image.loading = 'eager'; await image.decode().catch(() => {}); }));
+    return images.map(image => ({ src: image.src, good: image.naturalWidth > 0, width: image.getAttribute('width'), height: image.getAttribute('height') }));
+  });
+  expect(images.every(image => image.good && image.width && image.height)).toBe(true);
+  expect(images.every(image => new URL(image.src).origin === new URL(page.url()).origin)).toBe(true);
+  expect(errors).toEqual([]);
+});
+
+test('all four product tabs and keyboard boundaries work', async ({ page }) => {
+  await start(page);
+  const tabs = page.getByRole('tab');
+  for (let i = 0; i < cases.length; i++) {
+    await tabs.nth(i).click();
+    await expect(tabs.nth(i)).toHaveAttribute('aria-selected', 'true');
+    await expect(page.getByRole('tabpanel')).toHaveCount(1);
+    await expect(page.getByText(cases[i].story, { exact: true })).toBeVisible();
+  }
+  await tabs.last().press('Home');
+  await expect(tabs.first()).toBeFocused();
+  await tabs.first().press('ArrowDown');
+  await expect(tabs.nth(1)).toBeFocused();
+  await tabs.nth(1).press('End');
+  await expect(tabs.last()).toBeFocused();
+  await tabs.last().press('ArrowDown');
+  await expect(tabs.first()).toBeFocused();
+});
+
+test('conversation preserves supplied exchange and traverses all four steps', async ({ page }) => {
+  await start(page);
+  const previous = page.getByRole('button', { name: 'Previous conversation step' });
+  const next = page.getByRole('button', { name: 'Next conversation step' });
+  await expect(previous).toBeDisabled();
+  for (let i = 0; i < conversation.length; i++) {
+    await expect(page.locator('[data-conversation-count]')).toHaveText(`${i + 1} of 4`);
+    await expect(page.locator(`[data-conversation-step="${i}"]`)).toContainText(conversation[i].employee);
+    await expect(page.locator(`[data-conversation-step="${i}"]`)).toContainText(conversation[i].customer);
+    if (i < 3) await next.click();
+  }
+  await expect(next).toBeDisabled();
+  for (let i = 0; i < 3; i++) await previous.click();
+  await expect(previous).toBeDisabled();
+  await expect(page.locator('[data-conversation-count]')).toHaveText('1 of 4');
+});
+
+for (let questionIndex = 0; questionIndex < 3; questionIndex++) {
+  for (let choice = 0; choice < 4; choice++) {
+    test(`question ${questionIndex + 1}, option ${String.fromCharCode(65 + choice)}: feedback, score and review`, async ({ page }) => {
+      await start(page);
+      for (let index = 0; index < 3; index++) {
+        const selection = index === questionIndex ? choice : questions[index].correct;
+        await expect(page.locator('[data-check]')).toBeDisabled();
+        await answer(page, index, selection);
+        if (index < 2) {
+          await expect(page.locator(`[data-feedback="${index}"]`)).toContainText(questions[index].answers[selection].feedback);
+          await expect(page.locator(`[data-question="${index}"] input`).first()).toBeDisabled();
+          await page.getByRole('button', { name: 'Next question', exact: true }).click();
+        }
+      }
+      const score = choice === questions[questionIndex].correct ? 3 : 2;
+      await expect(page.locator('[data-score]')).toHaveText(`${score} / 3 correct`);
+      await expect(page.locator(`[data-review="${questionIndex}"] [data-review-feedback]`)).toHaveText(questions[questionIndex].answers[choice].feedback);
+      await expect(page.locator('[data-results]')).toBeVisible();
+      await expect(page.locator('[data-assessment-status]')).toContainText('Assessment complete');
+    });
+  }
+}
+
+test('assessment retains selected and submitted responses, restores state and retries fully', async ({ page }) => {
+  await start(page);
+  await expect(page.getByRole('button', { name: 'Previous question', exact: true })).toBeDisabled();
+  await page.locator('[data-question="0"] input').nth(2).check();
+  await page.getByRole('button', { name: 'Next question', exact: true }).click();
+  await page.getByRole('button', { name: 'Previous question', exact: true }).click();
+  await expect(page.locator('[data-question="0"] input').nth(2)).toBeChecked();
+  await page.getByRole('button', { name: 'Check answer', exact: true }).click();
+  await page.getByRole('button', { name: 'Next question', exact: true }).click();
+  await page.locator('[data-question="1"] input').nth(1).check();
+  await page.reload();
+  await expect(page.locator('[data-question-count]')).toHaveText('Question 2 of 3');
+  await expect(page.locator('[data-question="1"] input').nth(1)).toBeChecked();
+  await page.getByRole('button', { name: 'Previous question', exact: true }).click();
+  await expect(page.locator('[data-question="0"] input').nth(2)).toBeChecked();
+  await expect(page.locator('[data-question="0"] input').nth(2)).toBeDisabled();
+  await expect(page.locator('[data-feedback="0"]')).toContainText('Correct');
+  await page.getByRole('button', { name: 'Next question', exact: true }).click();
+  await page.getByRole('button', { name: 'Check answer', exact: true }).click();
+  await page.getByRole('button', { name: 'Next question', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Next question', exact: true })).toBeDisabled();
+  await answer(page, 2, 3);
+  await page.reload();
+  await expect(page.locator('[data-score]')).toHaveText('3 / 3 correct');
+  await page.getByRole('button', { name: 'Review questions' }).click();
+  await expect(page.locator('[data-question="0"] input').nth(2)).toBeDisabled();
+  await page.getByRole('button', { name: 'View results' }).click();
+  await page.getByRole('button', { name: 'Try again' }).click();
+  await expect(page.locator('[data-question-count]')).toHaveText('Question 1 of 3');
+  await expect(page.locator('[data-question="0"] input:checked')).toHaveCount(0);
+  await expect(page.locator('[data-check]')).toBeDisabled();
+  for (let index = 0; index < 3; index++) {
+    await answer(page, index, 0);
+    if (index < 2) await page.getByRole('button', { name: 'Next question', exact: true }).click();
+  }
+  await expect(page.locator('[data-score]')).toHaveText('0 / 3 correct');
+  await expect(page.getByText('Assessment complete', { exact: true })).toBeVisible();
+});
+
+test('out-of-order submissions complete only when all three are answered', async ({ page }) => {
+  await start(page);
+  await page.getByRole('button', { name: 'Next question', exact: true }).click();
+  await page.getByRole('button', { name: 'Next question', exact: true }).click();
+  await answer(page, 2, 0);
+  await expect(page.locator('[data-results]')).toBeHidden();
+  await page.getByRole('button', { name: 'Previous question', exact: true }).click();
+  await answer(page, 1, 0);
+  await page.getByRole('button', { name: 'Previous question', exact: true }).click();
+  await answer(page, 0, 2);
+  await expect(page.locator('[data-score]')).toHaveText('1 / 3 correct');
+});
+
+for (const invalid of ['{bad json', 'null', '{"version":99}', JSON.stringify({ version: 1, lastSection: 'assessment', questionIndex: 0, showResults: true, responses: [{ selected: 55, submitted: true }] })]) {
+  test(`invalid storage recovers: ${invalid.slice(0, 30)}`, async ({ page }) => {
+    await page.addInitScript(({ key, value }) => localStorage.setItem(key, value), { key: config.storageKey, value: invalid });
+    await start(page);
+    await expect(page.locator('[data-question-count]')).toHaveText('Question 1 of 3');
+    await answer(page, 0, 2);
+    await expect(page.locator('[data-feedback="0"]')).toContainText('Correct');
+  });
+}
+
+test('unavailable storage still permits assessment', async ({ page }) => {
+  await page.addInitScript(() => Object.defineProperty(window, 'localStorage', { get() { throw new DOMException('Unavailable', 'SecurityError'); } }));
+  await start(page);
+  await answer(page, 0, 2);
+  await expect(page.locator('[data-feedback="0"]')).toContainText('Correct');
+});
+
+test('reading position and active navigation restore independently of completion', async ({ page }) => {
+  await start(page);
+  await page.getByRole('link', { name: 'Product Basics', exact: true }).click();
+  await expect(page.locator('[data-nav="product-basics"]')).toHaveAttribute('aria-current', 'location');
+  await page.locator('#conversation').scrollIntoViewIfNeeded();
+  await page.evaluate(() => document.querySelector('#conversation')!.scrollIntoView({ block: 'start' }));
+  await expect(page.locator('[data-reading]')).toContainText('Customer conversation');
+  await page.reload();
+  await expect(page.locator('[data-reading]')).toContainText('Customer conversation');
+  await page.goto('./');
+  await expect(page.locator('[data-reading]')).toContainText('Customer conversation');
+  await expect(page.locator('[data-nav="how-to-sell"]')).toHaveAttribute('aria-current', 'location');
+  await expect(page.locator('[data-assessment-status]')).toHaveText('Assessment');
+  const top = await page.locator('#conversation').evaluate(element => element.getBoundingClientRect().top);
+  expect(top).toBeGreaterThan(90);
+  expect(top).toBeLessThan(230);
+  await page.evaluate(() => scrollTo({ top: 0, behavior: 'instant' }));
+  await expect(page.locator('[data-reading]')).toContainText('Overview');
+  await page.reload();
+  await expect(page.locator('[data-reading]')).toContainText('Overview');
+});
+
+for (const viewport of [{ width: 1440, height: 1000 }, { width: 768, height: 1024 }, { width: 390, height: 844 }, { width: 320, height: 740 }]) {
+  test(`responsive layout and screenshot ${viewport.width}`, async ({ page }) => {
+    await page.setViewportSize(viewport);
+    await start(page);
+    await page.locator('img').evaluateAll(async elements => { await Promise.all((elements as HTMLImageElement[]).map(async image => { image.loading = 'eager'; await image.decode().catch(() => {}); })); });
+    await expect(page.locator('.site-header')).toBeVisible();
+    const overflow = await page.evaluate(() => [...document.querySelectorAll<HTMLElement>('body *')].filter(element => {
+      const box = element.getBoundingClientRect();
+      return box.width > 0 && (box.right > innerWidth + 1 || box.left < -1) && getComputedStyle(element).position !== 'fixed';
+    }).map(element => `${element.tagName}.${element.className}`));
+    expect(overflow).toEqual([]);
+    await page.screenshot({ path: `test-results/course-${viewport.width}.png`, fullPage: true });
+    await page.screenshot({ path: `test-results/first-viewport-${viewport.width}.png` });
+    for (const tab of await page.getByRole('tab').all()) await tab.click();
+    await expect(page.getByRole('tabpanel')).toHaveCount(1);
+    if (viewport.width === 390 || viewport.width === 1440) {
+      const scan = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
+      expect(scan.violations).toEqual([]);
+    }
+  });
+}
+
+test('no-JavaScript fallback exposes all teaching, panels, exchanges and questions', async ({ browser }) => {
+  const context = await browser.newContext({ javaScriptEnabled: false });
+  const page = await context.newPage();
+  await page.goto(process.env.COURSE_TEST_URL || 'http://127.0.0.1:4321');
+  await expect(page.locator('[data-case]:visible')).toHaveCount(4);
+  await expect(page.locator('[data-conversation-step]:visible')).toHaveCount(4);
+  await expect(page.locator('[data-question]:visible')).toHaveCount(3);
+  await expect(page.getByText('Answer discussion', { exact: true })).toHaveCount(3);
+  await expect(page.locator('.range-selectors')).toBeHidden();
+  await expect(page.locator('.assessment-controls')).toBeHidden();
+  await context.close();
+});
+
+test('keyboard focus, reduced motion and submitted assessment accessibility', async ({ page }) => {
+  await start(page);
+  await page.keyboard.press('Tab');
+  await expect(page.getByRole('link', { name: 'Skip to course content' })).toBeFocused();
+  await page.keyboard.press('Enter');
+  expect(await page.evaluate(() => getComputedStyle(document.documentElement).scrollBehavior)).toBe('auto');
+  const option = page.locator('[data-question="0"] input').first();
+  await option.focus();
+  await option.press('ArrowRight');
+  await page.keyboard.press('ArrowRight');
+  await expect(page.locator('[data-question="0"] input').nth(2)).toBeChecked();
+  await page.getByRole('button', { name: 'Check answer', exact: true }).click();
+  const scan = await new AxeBuilder({ page }).include('#assessment').withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
+  expect(scan.violations).toEqual([]);
+});
+
+test('long mobile states stay within the viewport and conversation controls stay stable', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 740 });
+  await start(page);
+  for (const tab of await page.getByRole('tab').all()) {
+    await tab.click();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  }
+  await page.locator('#product-range').screenshot({ path: 'test-results/mobile-range.png' });
+  await page.locator('#product-basics').screenshot({ path: 'test-results/mobile-benefits.png' });
+  const heights: number[] = [];
+  for (let index = 0; index < 4; index++) {
+    heights.push((await page.locator('[data-conversation]').boundingBox())!.height);
+    const bounds = await page.locator(`[data-conversation-step="${index}"]`).boundingBox();
+    expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(320);
+    if (index === 2) await page.locator('[data-conversation]').screenshot({ path: 'test-results/mobile-conversation-3.png' });
+    if (index < 3) await page.getByRole('button', { name: 'Next conversation step' }).click();
+  }
+  expect(Math.max(...heights) - Math.min(...heights)).toBeLessThan(2);
+  for (let index = 0; index < 3; index++) {
+    await answer(page, index, index);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    if (index === 0) {
+      await expect(page.locator('[data-feedback="0"]')).toBeFocused();
+      const feedback = (await page.locator('[data-feedback="0"]').boundingBox())!;
+      const header = (await page.locator('.site-header').boundingBox())!;
+      expect(feedback.y).toBeGreaterThanOrEqual(header.y + header.height);
+      expect(feedback.y + feedback.height).toBeLessThan(740);
+      await page.screenshot({ path: 'test-results/mobile-feedback-viewport.png' });
+      await page.locator('[data-assessment]').screenshot({ path: 'test-results/mobile-feedback.png', style: '.site-header, .skip-link { visibility: hidden !important; }' });
+    }
+    if (index < 2) await page.getByRole('button', { name: 'Next question', exact: true }).click();
+  }
+  await page.locator('[data-results]').screenshot({ path: 'test-results/mobile-results.png' });
+  const scan = await new AxeBuilder({ page }).include('#assessment').withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
+  expect(scan.violations).toEqual([]);
+});

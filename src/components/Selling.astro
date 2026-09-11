@@ -1,0 +1,25 @@
+---
+import { ArrowRight } from '@lucide/astro';
+import { course } from '../content/course';
+import { asset } from '../config';
+import SectionHeading from './SectionHeading.astro';
+---
+<section id="how-to-sell" class="section wrap selling-section" aria-labelledby="selling-title" data-course-section>
+  <SectionHeading number="05" id="selling-title" title={course.selling.title} introduction={course.selling.introduction} />
+  <div class="selling-layout">
+    <div class="selling-photos">
+      <img src={asset('case-outdoors')} width="900" height="1350" alt="Black Fabiani luggage outdoors, with the handle extended." loading="lazy" />
+      <img src={asset('case-detail')} width="900" height="1350" alt="Close-up of the Fabiani luggage tag and case handle." loading="lazy" />
+    </div>
+    <ol class="selling-steps">
+      {course.selling.steps.map((step, index) => <li>
+        <h3><span>{String(index + 1).padStart(2, '0')}</span>{step.label}</h3>
+        <div class="selling-relationship">
+          <div><h4>What you do:</h4><p>{step.action}</p></div>
+          <ArrowRight class="connector" aria-hidden="true" />
+          <div><h4>How it helps the Customer</h4><p>{step.benefit}</p></div>
+        </div>
+      </li>)}
+    </ol>
+  </div>
+</section>

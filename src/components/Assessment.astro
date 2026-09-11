@@ -1,0 +1,48 @@
+---
+import { ChevronLeft, ChevronRight, Check, RotateCcw, ArrowRight } from '@lucide/astro';
+import { questions } from '../content/course';
+import SectionHeading from './SectionHeading.astro';
+---
+<section id="assessment" class="section wrap assessment-section" aria-labelledby="assessment-title" data-course-section>
+  <SectionHeading number="07" id="assessment-title" title="Assessment" />
+  <div class="assessment-tool" data-assessment>
+    <noscript><p class="no-script-note">All questions are available below. Scoring and saved answers require JavaScript.</p></noscript>
+    <form data-quiz-form>
+      {questions.map((question, index) => <div class="question-panel" data-question={index}>
+        <div class="question-context">
+          <p class="question-kicker">Question {index + 1} of {questions.length}</p>
+          {question.scenario && <blockquote><strong>Scenario</strong>&ldquo;{question.scenario}&rdquo;</blockquote>}
+          <h3 id={`question-${question.id}`} tabindex="-1">{question.prompt}</h3>
+          <div class="answer-feedback" data-feedback={index} role="status" tabindex="-1" hidden><strong data-feedback-title></strong><p data-feedback-text></p></div>
+        </div>
+        <fieldset aria-labelledby={`question-${question.id}`}>
+          <legend class="sr-only">Choose one answer</legend>
+          {question.answers.map((answer, answerIndex) => <label class="answer-option" data-answer-label={answerIndex}>
+            <input type="radio" name={question.id} value={answerIndex} data-answer={answerIndex} />
+            <span class="answer-letter" aria-hidden="true">{String.fromCharCode(65 + answerIndex)}</span>
+            <span class="answer-text">{answer.text}</span>
+            <span class="answer-indicator" aria-hidden="true"><Check size={16} /></span>
+          </label>)}
+        </fieldset>
+        <noscript><details><summary>Answer discussion</summary><p>{question.answers[question.correct].text}</p><p>{question.answers[question.correct].feedback}</p></details></noscript>
+      </div>)}
+      <div class="assessment-controls" hidden>
+        <button class="primary-button" type="submit" data-check disabled><Check size={18} aria-hidden="true" /><span>Check answer</span></button>
+        <div class="pager">
+          <span data-question-count aria-live="polite">Question 1 of 3</span>
+          <button type="button" class="icon-button" data-question-previous aria-label="Previous question" title="Previous question" disabled><ChevronLeft aria-hidden="true" /></button>
+          <button type="button" class="icon-button" data-question-next aria-label="Next question" title="Next question"><ChevronRight aria-hidden="true" /></button>
+        </div>
+      </div>
+    </form>
+    <div class="assessment-results" data-results hidden>
+      <div class="results-heading"><div><p class="eyebrow">Assessment complete</p><h3 tabindex="-1" data-results-heading>Your results</h3></div><p class="score" data-score></p></div>
+      <h4>Answer review</h4>
+      <ol class="answer-review">
+        {questions.map((question, index) => <li data-review={index}><h5>{question.prompt}</h5><p data-review-outcome></p><p><strong>Your answer: </strong><span data-review-answer></span></p><p data-review-correct></p><p data-review-feedback></p></li>)}
+      </ol>
+      <div class="result-actions"><button class="primary-button" type="button" data-retry><RotateCcw size={18} aria-hidden="true" />Try again</button><button class="text-button" type="button" data-review-questions>Review questions<ArrowRight size={18} aria-hidden="true" /></button></div>
+    </div>
+    <div class="completed-actions" data-completed-actions hidden><button class="text-button" type="button" data-view-results>View results<ArrowRight size={18} aria-hidden="true" /></button></div>
+  </div>
+</section>
