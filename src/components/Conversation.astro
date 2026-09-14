@@ -11,8 +11,10 @@ import SectionHeading from './SectionHeading.astro';
     <div class="conversation-content" aria-live="polite" aria-atomic="true">
       {conversation.map((step, index) => <div data-conversation-step={index} class="conversation-step">
         <span class="sr-only">Step {index + 1} of {conversation.length}</span>
-        <div class="exchange employee"><span class="avatar"><img src={asset('employee-avatar')} width="336" height="336" alt="" /></span><div><h3>Store Employee</h3><blockquote>&ldquo;{step.employee}&rdquo;</blockquote></div></div>
-        <div class="exchange customer"><span class="avatar"><img src={asset('customer-avatar')} width="282" height="282" alt="" /></span><div><h3>Customer</h3><blockquote>&ldquo;{step.customer}&rdquo;</blockquote></div></div>
+        {step.turns.map(turn => <div class={`exchange ${turn.role}`}>
+          <span class="avatar"><img src={asset(turn.role === 'employee' ? 'employee-avatar' : 'customer-avatar')} width={turn.role === 'employee' ? 336 : 282} height={turn.role === 'employee' ? 336 : 282} alt="" /></span>
+          <div><h3>{turn.role === 'employee' ? 'Store Employee' : 'Customer'}</h3><blockquote>&ldquo;{turn.text}&rdquo;</blockquote></div>
+        </div>)}
       </div>)}
     </div>
     <div class="pager conversation-controls" hidden>

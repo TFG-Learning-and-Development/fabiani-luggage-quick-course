@@ -62,33 +62,34 @@ test('conversation preserves supplied exchange and traverses all four steps', as
   const next = page.getByRole('button', { name: 'Next conversation step' });
   await expect(previous).toBeDisabled();
   for (let i = 0; i < conversation.length; i++) {
-    await expect(page.locator('[data-conversation-count]')).toHaveText(`${i + 1} of 4`);
-    await expect(page.locator(`[data-conversation-step="${i}"]`)).toContainText(conversation[i].employee);
-    await expect(page.locator(`[data-conversation-step="${i}"]`)).toContainText(conversation[i].customer);
-    if (i < 3) await next.click();
+    await expect(page.locator('[data-conversation-count]')).toHaveText(`${i + 1} of ${conversation.length}`);
+    for (const turn of conversation[i].turns) {
+      await expect(page.locator(`[data-conversation-step="${i}"]`)).toContainText(turn.text);
+    }
+    if (i < conversation.length - 1) await next.click();
   }
   await expect(next).toBeDisabled();
-  for (let i = 0; i < 3; i++) await previous.click();
+  for (let i = 0; i < conversation.length - 1; i++) await previous.click();
   await expect(previous).toBeDisabled();
-  await expect(page.locator('[data-conversation-count]')).toHaveText('1 of 4');
+  await expect(page.locator('[data-conversation-count]')).toHaveText(`1 of ${conversation.length}`);
 });
 
-for (let questionIndex = 0; questionIndex < 3; questionIndex++) {
+for (let questionIndex = 0; questionIndex < questions.length; questionIndex++) {
   for (let choice = 0; choice < 4; choice++) {
     test(`question ${questionIndex + 1}, option ${String.fromCharCode(65 + choice)}: feedback, score and review`, async ({ page }) => {
       await start(page);
-      for (let index = 0; index < 3; index++) {
+      for (let index = 0; index < questions.length; index++) {
         const selection = index === questionIndex ? choice : questions[index].correct;
         await expect(page.locator('[data-check]')).toBeDisabled();
         await answer(page, index, selection);
-        if (index < 2) {
+        if (index < questions.length - 1) {
           await expect(page.locator(`[data-feedback="${index}"]`)).toContainText(questions[index].answers[selection].feedback);
           await expect(page.locator(`[data-question="${index}"] input`).first()).toBeDisabled();
           await page.getByRole('button', { name: 'Next question', exact: true }).click();
         }
       }
-      const score = choice === questions[questionIndex].correct ? 3 : 2;
-      await expect(page.locator('[data-score]')).toHaveText(`${score} / 3 correct`);
+      const score = choice === questions[questionIndex].correct ? questions.length : questions.length - 1;
+      await expect(page.locator('[data-score]')).toHaveText(`${score} / ${questions.length} correct`);
       await expect(page.locator(`[data-review="${questionIndex}"] [data-review-feedback]`)).toHaveText(questions[questionIndex].answers[choice].feedback);
       await expect(page.locator('[data-results]')).toBeVisible();
     });
@@ -106,7 +107,7 @@ test('assessment retains selected and submitted responses, restores state and re
   await page.getByRole('button', { name: 'Next question', exact: true }).click();
   await page.locator('[data-question="1"] .answer-option').nth(1).click();
   await page.reload();
-  await expect(page.locator('[data-question-count]')).toHaveText('Question 2 of 3');
+  await expect(page.locator('[data-question-count]')).toHaveText(`Question 2 of ${questions.length}`);
   await expect(page.locator('[data-question="1"] input').nth(1)).toBeChecked();
   await page.getByRole('button', { name: 'Previous question', exact: true }).click();
   await expect(page.locator('[data-question="0"] input').nth(2)).toBeChecked();
@@ -115,43 +116,46 @@ test('assessment retains selected and submitted responses, restores state and re
   await page.getByRole('button', { name: 'Next question', exact: true }).click();
   await page.getByRole('button', { name: 'Check answer', exact: true }).click();
   await page.getByRole('button', { name: 'Next question', exact: true }).click();
+  await answer(page, 2, questions[2].correct);
+  await page.getByRole('button', { name: 'Next question', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Next question', exact: true })).toBeDisabled();
-  await answer(page, 2, 3);
+  await answer(page, 3, questions[3].correct);
   await page.reload();
-  await expect(page.locator('[data-score]')).toHaveText('3 / 3 correct');
+  await expect(page.locator('[data-score]')).toHaveText(`${questions.length} / ${questions.length} correct`);
   await page.getByRole('button', { name: 'Review questions' }).click();
   await expect(page.locator('[data-question="0"] input').nth(2)).toBeDisabled();
   await page.getByRole('button', { name: 'View results' }).click();
   await page.getByRole('button', { name: 'Try again' }).click();
-  await expect(page.locator('[data-question-count]')).toHaveText('Question 1 of 3');
+  await expect(page.locator('[data-question-count]')).toHaveText(`Question 1 of ${questions.length}`);
   await expect(page.locator('[data-question="0"] input:checked')).toHaveCount(0);
   await expect(page.locator('[data-check]')).toBeDisabled();
-  for (let index = 0; index < 3; index++) {
-    await answer(page, index, 0);
-    if (index < 2) await page.getByRole('button', { name: 'Next question', exact: true }).click();
+  for (let index = 0; index < questions.length; index++) {
+    await answer(page, index, (questions[index].correct + 1) % questions[index].answers.length);
+    if (index < questions.length - 1) await page.getByRole('button', { name: 'Next question', exact: true }).click();
   }
-  await expect(page.locator('[data-score]')).toHaveText('0 / 3 correct');
+  await expect(page.locator('[data-score]')).toHaveText(`0 / ${questions.length} correct`);
   await expect(page.getByText('Assessment complete', { exact: true })).toBeVisible();
 });
 
-test('out-of-order submissions complete only when all three are answered', async ({ page }) => {
+test('out-of-order submissions complete only when all questions are answered', async ({ page }) => {
   await start(page);
-  await page.getByRole('button', { name: 'Next question', exact: true }).click();
-  await page.getByRole('button', { name: 'Next question', exact: true }).click();
-  await answer(page, 2, 0);
+  for (let index = 1; index < questions.length; index++) {
+    await page.getByRole('button', { name: 'Next question', exact: true }).click();
+  }
+  await answer(page, questions.length - 1, 1);
   await expect(page.locator('[data-results]')).toBeHidden();
-  await page.getByRole('button', { name: 'Previous question', exact: true }).click();
-  await answer(page, 1, 0);
-  await page.getByRole('button', { name: 'Previous question', exact: true }).click();
-  await answer(page, 0, 2);
-  await expect(page.locator('[data-score]')).toHaveText('1 / 3 correct');
+  for (let index = questions.length - 2; index >= 0; index--) {
+    await page.getByRole('button', { name: 'Previous question', exact: true }).click();
+    await answer(page, index, 0);
+  }
+  await expect(page.locator('[data-score]')).toHaveText(`0 / ${questions.length} correct`);
 });
 
 for (const invalid of ['{bad json', 'null', '{"version":99}', JSON.stringify({ version: 1, lastSection: 'assessment', questionIndex: 0, showResults: true, responses: [{ selected: 55, submitted: true }] })]) {
   test(`invalid storage recovers: ${invalid.slice(0, 30)}`, async ({ page }) => {
     await page.addInitScript(({ key, value }) => localStorage.setItem(key, value), { key: config.storageKey, value: invalid });
     await start(page);
-    await expect(page.locator('[data-question-count]')).toHaveText('Question 1 of 3');
+    await expect(page.locator('[data-question-count]')).toHaveText(`Question 1 of ${questions.length}`);
     await answer(page, 0, 2);
     await expect(page.locator('[data-feedback="0"]')).toContainText('Correct');
   });
@@ -226,8 +230,8 @@ test('no-JavaScript fallback exposes all teaching, panels, exchanges and questio
   await page.goto(process.env.COURSE_TEST_URL || 'http://127.0.0.1:4321');
   await expect(page.locator('[data-case]:visible')).toHaveCount(4);
   await expect(page.locator('[data-conversation-step]:visible')).toHaveCount(4);
-  await expect(page.locator('[data-question]:visible')).toHaveCount(3);
-  await expect(page.getByText('Answer discussion', { exact: true })).toHaveCount(3);
+  await expect(page.locator('[data-question]:visible')).toHaveCount(questions.length);
+  await expect(page.getByText('Answer discussion', { exact: true })).toHaveCount(questions.length);
   await expect(page.locator('.range-selectors')).toBeHidden();
   await expect(page.locator('.assessment-controls')).toBeHidden();
   await context.close();
@@ -249,7 +253,7 @@ test('keyboard focus, reduced motion and submitted assessment accessibility', as
   expect(scan.violations).toEqual([]);
 });
 
-test('long mobile states stay within the viewport and conversation controls stay stable', async ({ page }) => {
+test('long mobile states stay within the viewport', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 740 });
   await start(page);
   for (const tab of await page.getByRole('tab').all()) {
@@ -258,17 +262,18 @@ test('long mobile states stay within the viewport and conversation controls stay
   }
   await page.locator('#product-range').screenshot({ path: 'test-results/mobile-range.png' });
   await page.locator('#product-basics').screenshot({ path: 'test-results/mobile-benefits.png' });
-  const heights: number[] = [];
-  for (let index = 0; index < 4; index++) {
-    heights.push((await page.locator('[data-conversation]').boundingBox())!.height);
+  for (let index = 0; index < conversation.length; index++) {
     const bounds = await page.locator(`[data-conversation-step="${index}"]`).boundingBox();
     expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(320);
-    if (index === 2) await page.locator('[data-conversation]').screenshot({ path: 'test-results/mobile-conversation-3.png' });
-    if (index < 3) await page.getByRole('button', { name: 'Next conversation step' }).click();
+    if (index === conversation.length - 1) {
+      await page.locator('#conversation').evaluate(element => element.scrollIntoView({ block: 'start' }));
+      await page.screenshot({ path: 'test-results/mobile-conversation-4-viewport.png' });
+      await page.locator('[data-conversation]').screenshot({ path: 'test-results/mobile-conversation-4.png', style: '.site-header, .skip-link { visibility: hidden !important; }' });
+    }
+    if (index < conversation.length - 1) await page.getByRole('button', { name: 'Next conversation step' }).click();
   }
-  expect(Math.max(...heights) - Math.min(...heights)).toBeLessThan(2);
-  for (let index = 0; index < 3; index++) {
-    await answer(page, index, index);
+  for (let index = 0; index < questions.length; index++) {
+    await answer(page, index, (questions[index].correct + 1) % questions[index].answers.length);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     if (index === 0) {
       await expect(page.locator('[data-feedback="0"]')).toBeFocused();
@@ -279,7 +284,7 @@ test('long mobile states stay within the viewport and conversation controls stay
       await page.screenshot({ path: 'test-results/mobile-feedback-viewport.png' });
       await page.locator('[data-assessment]').screenshot({ path: 'test-results/mobile-feedback.png', style: '.site-header, .skip-link { visibility: hidden !important; }' });
     }
-    if (index < 2) await page.getByRole('button', { name: 'Next question', exact: true }).click();
+    if (index < questions.length - 1) await page.getByRole('button', { name: 'Next question', exact: true }).click();
   }
   await page.locator('[data-results]').screenshot({ path: 'test-results/mobile-results.png' });
   const scan = await new AxeBuilder({ page }).include('#assessment').withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();

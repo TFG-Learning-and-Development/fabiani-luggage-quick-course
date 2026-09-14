@@ -59,7 +59,6 @@ function initConversation() {
   const steps = all('[data-conversation-step]', root);
   const previous = get<HTMLButtonElement>('[data-conversation-previous]', root);
   const next = get<HTMLButtonElement>('[data-conversation-next]', root);
-  const content = get('.conversation-content', root);
   let index = 0;
   const render = () => {
     steps.forEach((step, i) => { step.hidden = i !== index; });
@@ -72,21 +71,6 @@ function initConversation() {
   render();
   root.dataset.enhanced = 'true';
   get('.conversation-controls', root).hidden = false;
-  let measuredWidth = 0;
-  const measure = () => {
-    if (content.clientWidth === measuredWidth) return;
-    measuredWidth = content.clientWidth;
-    let tallest = 0;
-    steps.forEach(step => {
-      const wasHidden = step.hidden;
-      step.hidden = false;
-      tallest = Math.max(tallest, step.getBoundingClientRect().height);
-      step.hidden = wasHidden;
-    });
-    content.style.minHeight = `${Math.ceil(tallest) + 24}px`;
-  };
-  measure();
-  new ResizeObserver(measure).observe(content);
 }
 
 function initAssessment() {
@@ -121,7 +105,6 @@ function initAssessment() {
       const feedback = get('[data-feedback]', panel);
       feedback.hidden = !response.submitted;
       if (response.submitted && response.selected !== null) {
-        get('[data-feedback-title]', feedback).textContent = response.selected === question.correct ? 'Correct' : 'Consider this';
         get('[data-feedback-text]', feedback).textContent = question.answers[response.selected].feedback;
       }
     });

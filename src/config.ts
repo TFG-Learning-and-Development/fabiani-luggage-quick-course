@@ -1,6 +1,6 @@
 export const config = {
-  storageKey: 'fabiani-luggage:progress:v1',
-  storageVersion: 1,
+  storageKey: 'fabiani-luggage:progress:v2',
+  storageVersion: 2,
 };
 
 export const sections = [

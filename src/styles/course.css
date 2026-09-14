@@ -138,6 +138,7 @@ button, a, input, summary { touch-action: manipulation; }
 .conversation-step + .conversation-step { margin-top: 32px; border-top: 1px solid var(--line); padding-top: 32px; }
 .conversation-tool[data-enhanced] .conversation-step { margin: 0; border: 0; padding: 0; }
 .exchange { display: grid; grid-template-columns: 64px 1fr; gap: 20px; max-width: 91%; }
+.exchange + .exchange { margin-top: 24px; }
 .exchange.customer { direction: rtl; margin: 24px 0 0 auto; }
 .exchange.customer > * { direction: ltr; }
 .exchange.customer h3 { text-align: right; }
@@ -152,7 +153,11 @@ button, a, input, summary { touch-action: manipulation; }
 .text-button { background: transparent; color: var(--ink); border: 0; padding-inline: 0; }
 .assessment-section { padding-top: 0; }
 .assessment-tool { background: #efeeee; border: 1px solid #e3e0de; border-radius: var(--panel-radius); padding: 32px 36px 28px; }
-.assessment-title { color: var(--ink); font-size: var(--body-size); margin-bottom: 24px; }
+.assessment-title { color: var(--ink); font-size: var(--body-size); margin-bottom: 12px; }
+.assessment-introduction { max-width: 920px; margin-bottom: 24px; }
+.assessment-introduction h3 { font-size: var(--body-size); margin-bottom: 8px; }
+.assessment-introduction p, .question-scenario-title { font-size: var(--body-size); }
+.question-scenario-title { margin-bottom: 12px; }
 .question-panel { display: grid; grid-template-columns: .85fr 1.15fr; gap: 36px; }
 .question-panel + .question-panel { margin-top: 48px; padding-top: 32px; border-top: 1px solid var(--line); }
 .assessment-tool[data-enhanced] .question-panel { margin: 0; padding: 0; border: 0; }
@@ -175,7 +180,7 @@ button, a, input, summary { touch-action: manipulation; }
 .answer-option:has(input:disabled) { cursor: default; }
 .answer-feedback { background: var(--ink); color: white; border-radius: 5px; padding: 20px; margin-top: 24px; }
 .answer-feedback strong { color: var(--gold-light); font-size: var(--body-size); }
-.answer-feedback p { font-size: var(--body-size); margin-top: 8px; }
+.answer-feedback p { font-size: var(--body-size); }
 .eyebrow { color: var(--gold-text); font-size: 12px; font-weight: 700; margin-bottom: 16px; }
 .assessment-controls { display: flex; align-items: center; justify-content: space-between; gap: 24px; border-top: 1px solid #d7d2cf; margin-top: 30px; padding-top: 24px; }
 .results-heading { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 24px; margin-bottom: 24px; background: var(--ink); color: white; }

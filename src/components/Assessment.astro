@@ -1,19 +1,21 @@
 ---
 import { ChevronLeft, ChevronRight, Check, RotateCcw, ArrowRight } from '@lucide/astro';
-import { questions } from '../content/course';
+import { course, questions } from '../content/course';
 ---
 <section id="assessment" class="section wrap assessment-section" aria-labelledby="assessment-title" data-course-section>
   <div class="assessment-tool" data-assessment>
-    <h2 id="assessment-title" class="assessment-title">Assessment</h2>
+    <h2 id="assessment-title" class="assessment-title">{course.assessment.title}</h2>
+    <div class="assessment-introduction"><h3>{course.assessment.subtitle}</h3><p>{course.assessment.introduction}</p></div>
     <noscript><p class="no-script-note">All questions are available below. Scoring and saved answers require JavaScript.</p></noscript>
     <form data-quiz-form>
       {questions.map((question, index) => <div class="question-panel" data-question={index}>
         <div class="question-context">
           <div class="question-prompt-card">
-            {question.scenario && <blockquote><strong>{index + 1}. Scenario: </strong>&ldquo;{question.scenario}&rdquo;</blockquote>}
-            <h3 id={`question-${question.id}`} tabindex="-1"><strong>{question.scenario ? 'Question: ' : `${index + 1}. `}</strong>{question.prompt}</h3>
+            <p class="question-scenario-title"><strong>{question.scenarioTitle}</strong></p>
+            <blockquote><strong>Customer says: </strong>&ldquo;{question.scenario}&rdquo;</blockquote>
+            <h3 id={`question-${question.id}`} tabindex="-1"><strong>Question: </strong>{question.prompt}</h3>
           </div>
-          <div class="answer-feedback" data-feedback={index} role="status" tabindex="-1" hidden><strong data-feedback-title></strong><p data-feedback-text></p></div>
+          <div class="answer-feedback" data-feedback={index} role="status" tabindex="-1" hidden><p data-feedback-text></p></div>
         </div>
         <fieldset aria-labelledby={`question-${question.id}`}>
           <legend class="sr-only">Choose one answer</legend>
@@ -29,7 +31,7 @@ import { questions } from '../content/course';
       <div class="assessment-controls" hidden>
         <button class="primary-button" type="submit" data-check disabled><Check size={18} aria-hidden="true" /><span>Check answer</span></button>
         <div class="pager">
-          <span data-question-count aria-live="polite">Question 1 of 3</span>
+          <span data-question-count aria-live="polite">Question 1 of {questions.length}</span>
           <button type="button" class="icon-button" data-question-previous aria-label="Previous question" title="Previous question" disabled><ChevronLeft aria-hidden="true" /></button>
           <button type="button" class="icon-button" data-question-next aria-label="Next question" title="Next question"><ChevronRight aria-hidden="true" /></button>
         </div>
