@@ -24,19 +24,17 @@ Astro builds into `dist/`. There is no runtime server dependency in the generate
 ## Project layout
 
 - `src/content/course.ts`: supplied copy, proposed missing states, questions, feedback and provenance metadata.
-- `src/config.ts`: People Connect destination, local storage key/version, navigation mapping and base-aware asset paths.
+- `src/config.ts`: local storage key/version, navigation mapping and base-aware asset paths.
 - `src/components/`: navigation, product tabs, feature relationships, selling framework, conversation and assessment.
 - `src/scripts/`: small TypeScript controllers and validated local persistence.
 - `src/styles/course.css`: central visual tokens and responsive styles.
-- `public/images/`: optimised local images extracted from the PDF.
+- `public/images/`: supplied artwork and optimised local images extracted from the PDF.
 - `tests/course.spec.ts`: browser interaction, persistence, accessibility and responsive checks.
 - `scripts/inspect-pdf.py`, `scripts/extract-assets.py`: reproducible PDF inspection and extraction (optional Python tools; require PyMuPDF and Pillow). Run with the source PDF path as the first argument. Generated `design-reference/` evidence is local and excluded from source control.
 
 ## Configuration
 
-Set `config.peopleConnectUrl` to the supplied, verified course-specific destination. Until then, the return action is not rendered.
-
-The default base is `/`. To build under a subpath:
+“Return to People Connect” is deliberately displayed as non-interactive closing text. The default base is `/`. To build under a subpath:
 
 ```powershell
 $env:COURSE_BASE_PATH = '/fabiani-luggage-quick-course/'

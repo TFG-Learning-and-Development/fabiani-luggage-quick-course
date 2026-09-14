@@ -2,7 +2,7 @@ export type Provenance = 'supplied-pdf' | 'authored-review' | 'inferred-review';
 export interface ReviewMeta { source: Provenance; review?: string }
 export interface CasePanel extends ReviewMeta {
   id: string; label: string; suited: string; story: string;
-  image: string; imageAlt: string; imageCaption?: string;
+  image: string; imageWidth: number; imageHeight: number; imageAlt: string; imageCaption?: string;
 }
 export interface ConversationStep extends ReviewMeta { employee: string; customer: string }
 export interface Answer { text: string; feedback: string }
@@ -76,25 +76,25 @@ export const cases: CasePanel[] = [
     id: 'cabin', label: 'Small / Cabin Case', source: 'supplied-pdf',
     suited: 'Overnight stays, 1-3 day business trips and weekends away.',
     story: 'Use this option for shorter trips where the Customer needs a refined, easy-to-move case for the essentials. The cabin size supports organised packing, while the sleek black finish keeps the look timeless and aligned to the Fabiani wardrobe.',
-    image: 'cabin-case', imageAlt: 'The black Small / Cabin Case shown in the designer board, with its handle extended.',
+    image: 'small.png', imageWidth: 608, imageHeight: 760, imageAlt: 'Black Fabiani Small / Cabin Case with its handle extended.',
   },
   {
-    id: 'medium', label: 'Medium Case', source: 'authored-review', review: 'Approve qualitative guidance; supply confirmed medium-case photograph.',
+    id: 'medium', label: 'Medium Case', source: 'authored-review', review: 'Approve qualitative guidance.',
     suited: 'Journeys where the Customer needs to pack more outfit options and essentials than a cabin case can accommodate.',
     story: 'Ask about the clothing, footwear and accessories the Customer needs to take. Explore a medium case when their packing need calls for more room, connecting organised packing and easy movement to their journey. Confirm the actual capacity before recommending.',
-    image: 'case-outdoors', imageAlt: 'Fabiani luggage photographed outdoors; the case size is not confirmed.', imageCaption: 'Fabiani range photography. Case size not confirmed.',
+    image: 'medium.png', imageWidth: 602, imageHeight: 732, imageAlt: 'Black Fabiani Medium Case with its handle extended.',
   },
   {
-    id: 'large', label: 'Large Case', source: 'authored-review', review: 'Approve qualitative guidance; supply confirmed large-case photograph.',
+    id: 'large', label: 'Large Case', source: 'authored-review', review: 'Approve qualitative guidance.',
     suited: 'Journeys with a fuller wardrobe or clothing for different occasions, where the packing need calls for more space.',
     story: 'Understand what the Customer plans to pack and how they will move between destinations. Explore a large case when the wardrobe requires it, linking an organised interior and protective structure to their garments. Confirm capacity and transport requirements before recommending.',
-    image: 'case-detail', imageAlt: 'Detail of a Fabiani luggage handle and branded tag; the case size is not confirmed.', imageCaption: 'Fabiani range detail. Case size not confirmed.',
+    image: 'large.png', imageWidth: 594, imageHeight: 752, imageAlt: 'Black Fabiani Large Case with its handle extended.',
   },
   {
-    id: 'multiple', label: 'Multiple-Case Travel', source: 'authored-review', review: 'Approve qualitative guidance; supply confirmed range or multiple-case photograph.',
+    id: 'multiple', label: 'Multiple-Case Travel', source: 'authored-review', review: 'Approve qualitative guidance.',
     suited: 'Journeys where the Customer needs to organise their packing across more than one case.',
     story: 'Ask what needs to travel together and what the Customer wants to keep separate. Discuss a combination of cases only when it serves that packing need. Consider how the Customer will manage the cases on their journey, and confirm each case\'s dimensions and capacity.',
-    image: 'case-outdoors', imageAlt: 'A single case from the Fabiani range; this photograph does not show a multiple-case set.', imageCaption: 'Fabiani range photography. A single case is shown.',
+    image: 'multiple case.png', imageWidth: 283, imageHeight: 283, imageAlt: 'Coordinated set of three black Fabiani cases in different sizes.',
   },
 ];
 
@@ -142,7 +142,7 @@ export const questions: Question[] = [
 
 export const authoringMetadata = {
   assetDescriptions: { source: 'authored-review', scope: 'All image alt text and range-image captions.' },
-  interface: { source: 'authored-review', scope: 'Section numbers, progress, assessment controls, results, answer review, no-JavaScript notices and navigation accessibility labels.' },
+  interface: { source: 'authored-review', scope: 'Local progress, assessment controls, results, answer review, no-JavaScript notices and navigation accessibility labels.' },
   frameworkLabels: { source: 'inferred-review', scope: 'Ask, Connect and Recommend labels assigned in order to the three supplied explanations.' },
   defaults: { source: 'authored-review', scope: 'Local-only persistence; all questions submitted means complete; no pass threshold; fresh full retry.' },
 } satisfies Record<string, { source: Provenance; scope: string }>;

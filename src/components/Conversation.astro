@@ -1,17 +1,18 @@
 ---
-import { ChevronLeft, ChevronRight, UserRound, UserRoundCheck } from '@lucide/astro';
+import { ChevronLeft, ChevronRight } from '@lucide/astro';
 import { conversation, course } from '../content/course';
+import { asset } from '../config';
 import SectionHeading from './SectionHeading.astro';
 ---
 <section id="conversation" class="section wrap" aria-labelledby="conversation-title" data-course-section>
-  <SectionHeading number="06" id="conversation-title" title={course.conversation.title} />
+  <SectionHeading id="conversation-title" title={course.conversation.title} />
   <p class="conversation-scenario"><strong>Scenario:</strong> {course.conversation.scenario}</p>
   <div class="conversation-tool" data-conversation>
     <div class="conversation-content" aria-live="polite" aria-atomic="true">
       {conversation.map((step, index) => <div data-conversation-step={index} class="conversation-step">
         <span class="sr-only">Step {index + 1} of {conversation.length}</span>
-        <div class="exchange employee"><span class="avatar"><UserRoundCheck size={28} aria-hidden="true" /></span><div><h3>Store Employee</h3><blockquote>&ldquo;{step.employee}&rdquo;</blockquote></div></div>
-        <div class="exchange customer"><span class="avatar"><UserRound size={28} aria-hidden="true" /></span><div><h3>Customer</h3><blockquote>&ldquo;{step.customer}&rdquo;</blockquote></div></div>
+        <div class="exchange employee"><span class="avatar"><img src={asset('employee-avatar')} width="336" height="336" alt="" /></span><div><h3>Store Employee</h3><blockquote>&ldquo;{step.employee}&rdquo;</blockquote></div></div>
+        <div class="exchange customer"><span class="avatar"><img src={asset('customer-avatar')} width="282" height="282" alt="" /></span><div><h3>Customer</h3><blockquote>&ldquo;{step.customer}&rdquo;</blockquote></div></div>
       </div>)}
     </div>
     <div class="pager conversation-controls" hidden>

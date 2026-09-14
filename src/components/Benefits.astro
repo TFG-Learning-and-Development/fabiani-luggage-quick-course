@@ -4,7 +4,7 @@ import { course } from '../content/course';
 import SectionHeading from './SectionHeading.astro';
 ---
 <section id="product-basics" class="section wrap" aria-labelledby="features-title" data-course-section>
-  <SectionHeading number="04" id="features-title" title={course.features.title} introduction={course.features.introduction} />
+  <SectionHeading id="features-title" title={course.features.title} introduction={course.features.introduction} />
   <div class="benefits-head" aria-hidden="true"><span>Product feature</span><span></span><span>Functional benefit</span><span></span><span>Customer connection</span></div>
   <div class="benefits-list">
     {course.features.rows.map(row => <article class="benefit-row">

@@ -1,5 +1,4 @@
 export const config = {
-  peopleConnectUrl: '',
   storageKey: 'fabiani-luggage:progress:v1',
   storageVersion: 1,
 };
@@ -14,5 +13,6 @@ export const sections = [
   { id: 'assessment', label: 'Assessment', nav: '' },
 ] as const;
 
-export const navigation = ['overview', 'customer-moment', 'product-basics', 'product-range', 'how-to-sell'] as const;
-export const asset = (name: string) => `${import.meta.env.BASE_URL.replace(/\/$/, '')}/images/${name}.webp`;
+export const navigation = ['overview', 'customer-moment', 'product-range', 'product-basics', 'how-to-sell'] as const;
+export const assetFile = (name: string) => `${import.meta.env.BASE_URL.replace(/\/$/, '')}/images/${name}`;
+export const asset = (name: string) => assetFile(`${name}.webp`);

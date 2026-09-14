@@ -19,6 +19,8 @@ render('wordmark', (98, 54, 338, 92), 3)
 render('pattern', (10, 4940, 1430, 5050), 1)
 for name, rect in [('journey', (288, 1447, 426, 1585)), ('wardrobe', (517, 1447, 655, 1585)), ('luggage', (762, 1447, 900, 1585)), ('benefit', (1008, 1447, 1146, 1585))]:
     render(name, rect)
+render('customer-avatar', (194, 1677, 282, 1765), 3)
+render('employee-avatar', (162.5, 6532.5, 265.5, 6635.5), 3)
 for name, xref, smask, width in [('lifestyle', 253, 0, 1200), ('cabin-case', 255, 254, 608), ('case-outdoors', 256, 0, 900), ('case-detail', 257, 0, 900)]:
     pix = fitz.Pixmap(doc, xref)
     if smask:

@@ -1,17 +1,17 @@
 ---
-import { ArrowUpRight } from '@lucide/astro';
 import { asset, navigation, sections } from '../config';
+import { Menu, X } from '@lucide/astro';
 ---
 <a class="skip-link" href="#main">Skip to course content</a>
 <header class="site-header">
   <div class="nav-shell wrap">
     <a class="brand" href="#overview" aria-label="Fabiani Luggage overview"><img src={asset('wordmark')} width="720" height="114" alt="Fabiani" /></a>
-    <nav aria-label="Course sections">
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="course-navigation" aria-label="Open course navigation" title="Open course navigation" data-nav-toggle>
+      <Menu class="menu-icon" aria-hidden="true" />
+      <X class="close-icon" aria-hidden="true" />
+    </button>
+    <nav id="course-navigation" aria-label="Course sections">
       {navigation.map(id => <a href={`#${id}`} data-nav={id} aria-current={id === 'overview' ? 'location' : undefined}>{sections.find(section => section.id === id)?.label}</a>)}
     </nav>
-  </div>
-  <div class="course-status wrap">
-    <span class="reading-position" data-reading>Overview</span>
-    <a href="#assessment" data-assessment-link><span data-assessment-status>Assessment</span><ArrowUpRight size={14} aria-hidden="true" /></a>
   </div>
 </header>

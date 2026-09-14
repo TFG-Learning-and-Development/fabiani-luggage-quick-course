@@ -8,7 +8,7 @@ const start = async (page: Page) => {
   await expect(page.locator('[data-assessment]')).toHaveAttribute('data-enhanced', 'true');
 };
 const answer = async (page: Page, index: number, option: number) => {
-  await page.locator(`[data-question="${index}"] input`).nth(option).check();
+  await page.locator(`[data-question="${index}"] .answer-option`).nth(option).click();
   await page.getByRole('button', { name: 'Check answer', exact: true }).click();
 };
 
@@ -26,6 +26,7 @@ test('all supplied instructional content and local assets render', async ({ page
   }
   await expect(page.getByText(course.range.warning, { exact: true })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Return to People Connect' })).toHaveCount(0);
+  await expect(page.locator('.return-label')).toHaveText('Return to People Connect');
   const images = await page.locator('img').evaluateAll(async elements => {
     const images = elements as HTMLImageElement[];
     await Promise.all(images.map(async image => { image.loading = 'eager'; await image.decode().catch(() => {}); }));
@@ -90,7 +91,6 @@ for (let questionIndex = 0; questionIndex < 3; questionIndex++) {
       await expect(page.locator('[data-score]')).toHaveText(`${score} / 3 correct`);
       await expect(page.locator(`[data-review="${questionIndex}"] [data-review-feedback]`)).toHaveText(questions[questionIndex].answers[choice].feedback);
       await expect(page.locator('[data-results]')).toBeVisible();
-      await expect(page.locator('[data-assessment-status]')).toContainText('Assessment complete');
     });
   }
 }
@@ -98,13 +98,13 @@ for (let questionIndex = 0; questionIndex < 3; questionIndex++) {
 test('assessment retains selected and submitted responses, restores state and retries fully', async ({ page }) => {
   await start(page);
   await expect(page.getByRole('button', { name: 'Previous question', exact: true })).toBeDisabled();
-  await page.locator('[data-question="0"] input').nth(2).check();
+  await page.locator('[data-question="0"] .answer-option').nth(2).click();
   await page.getByRole('button', { name: 'Next question', exact: true }).click();
   await page.getByRole('button', { name: 'Previous question', exact: true }).click();
   await expect(page.locator('[data-question="0"] input').nth(2)).toBeChecked();
   await page.getByRole('button', { name: 'Check answer', exact: true }).click();
   await page.getByRole('button', { name: 'Next question', exact: true }).click();
-  await page.locator('[data-question="1"] input').nth(1).check();
+  await page.locator('[data-question="1"] .answer-option').nth(1).click();
   await page.reload();
   await expect(page.locator('[data-question-count]')).toHaveText('Question 2 of 3');
   await expect(page.locator('[data-question="1"] input').nth(1)).toBeChecked();
@@ -164,26 +164,25 @@ test('unavailable storage still permits assessment', async ({ page }) => {
   await expect(page.locator('[data-feedback="0"]')).toContainText('Correct');
 });
 
-test('reading position and active navigation restore independently of completion', async ({ page }) => {
+test('active navigation and last section restore independently of completion', async ({ page }) => {
   await start(page);
   await page.getByRole('link', { name: 'Product Basics', exact: true }).click();
   await expect(page.locator('[data-nav="product-basics"]')).toHaveAttribute('aria-current', 'location');
   await page.locator('#conversation').scrollIntoViewIfNeeded();
   await page.evaluate(() => document.querySelector('#conversation')!.scrollIntoView({ block: 'start' }));
-  await expect(page.locator('[data-reading]')).toContainText('Customer conversation');
-  await page.reload();
-  await expect(page.locator('[data-reading]')).toContainText('Customer conversation');
-  await page.goto('./');
-  await expect(page.locator('[data-reading]')).toContainText('Customer conversation');
   await expect(page.locator('[data-nav="how-to-sell"]')).toHaveAttribute('aria-current', 'location');
-  await expect(page.locator('[data-assessment-status]')).toHaveText('Assessment');
+  await page.waitForFunction(key => JSON.parse(localStorage.getItem(key) || '{}').lastSection === 'conversation', config.storageKey);
+  await page.reload();
+  await expect(page.locator('[data-nav="how-to-sell"]')).toHaveAttribute('aria-current', 'location');
   const top = await page.locator('#conversation').evaluate(element => element.getBoundingClientRect().top);
   expect(top).toBeGreaterThan(90);
   expect(top).toBeLessThan(230);
   await page.evaluate(() => scrollTo({ top: 0, behavior: 'instant' }));
-  await expect(page.locator('[data-reading]')).toContainText('Overview');
+  await expect(page.locator('[data-nav="overview"]')).toHaveAttribute('aria-current', 'location');
+  await page.waitForFunction(key => JSON.parse(localStorage.getItem(key) || '{}').lastSection === 'overview', config.storageKey);
   await page.reload();
-  await expect(page.locator('[data-reading]')).toContainText('Overview');
+  await expect(page.locator('[data-nav="overview"]')).toHaveAttribute('aria-current', 'location');
+  await expect(page.locator('[data-reading], [data-assessment-link]')).toHaveCount(0);
 });
 
 for (const viewport of [{ width: 1440, height: 1000 }, { width: 768, height: 1024 }, { width: 390, height: 844 }, { width: 320, height: 740 }]) {
@@ -192,6 +191,19 @@ for (const viewport of [{ width: 1440, height: 1000 }, { width: 768, height: 102
     await start(page);
     await page.locator('img').evaluateAll(async elements => { await Promise.all((elements as HTMLImageElement[]).map(async image => { image.loading = 'eager'; await image.decode().catch(() => {}); })); });
     await expect(page.locator('.site-header')).toBeVisible();
+    if (viewport.width <= 800) {
+      const toggle = page.locator('[data-nav-toggle]');
+      await expect(toggle).toBeVisible();
+      await expect(toggle).toHaveAccessibleName('Open course navigation');
+      await expect(page.locator('#course-navigation')).toBeHidden();
+      await toggle.click();
+      await expect(page.locator('#course-navigation')).toBeVisible();
+      await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+      await expect(toggle).toHaveAccessibleName('Close course navigation');
+      await page.keyboard.press('Escape');
+      await expect(page.locator('#course-navigation')).toBeHidden();
+      await expect(toggle).toBeFocused();
+    }
     const overflow = await page.evaluate(() => [...document.querySelectorAll<HTMLElement>('body *')].filter(element => {
       const box = element.getBoundingClientRect();
       return box.width > 0 && (box.right > innerWidth + 1 || box.left < -1) && getComputedStyle(element).position !== 'fixed';

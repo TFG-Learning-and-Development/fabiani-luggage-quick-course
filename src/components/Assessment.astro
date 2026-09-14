@@ -1,18 +1,18 @@
 ---
 import { ChevronLeft, ChevronRight, Check, RotateCcw, ArrowRight } from '@lucide/astro';
 import { questions } from '../content/course';
-import SectionHeading from './SectionHeading.astro';
 ---
 <section id="assessment" class="section wrap assessment-section" aria-labelledby="assessment-title" data-course-section>
-  <SectionHeading number="07" id="assessment-title" title="Assessment" />
   <div class="assessment-tool" data-assessment>
+    <h2 id="assessment-title" class="assessment-title">Assessment</h2>
     <noscript><p class="no-script-note">All questions are available below. Scoring and saved answers require JavaScript.</p></noscript>
     <form data-quiz-form>
       {questions.map((question, index) => <div class="question-panel" data-question={index}>
         <div class="question-context">
-          <p class="question-kicker">Question {index + 1} of {questions.length}</p>
-          {question.scenario && <blockquote><strong>Scenario</strong>&ldquo;{question.scenario}&rdquo;</blockquote>}
-          <h3 id={`question-${question.id}`} tabindex="-1">{question.prompt}</h3>
+          <div class="question-prompt-card">
+            {question.scenario && <blockquote><strong>{index + 1}. Scenario: </strong>&ldquo;{question.scenario}&rdquo;</blockquote>}
+            <h3 id={`question-${question.id}`} tabindex="-1"><strong>{question.scenario ? 'Question: ' : `${index + 1}. `}</strong>{question.prompt}</h3>
+          </div>
           <div class="answer-feedback" data-feedback={index} role="status" tabindex="-1" hidden><strong data-feedback-title></strong><p data-feedback-text></p></div>
         </div>
         <fieldset aria-labelledby={`question-${question.id}`}>

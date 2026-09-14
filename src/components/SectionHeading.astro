@@ -1,9 +1,8 @@
 ---
-interface Props { number: string; title: string; introduction?: string; id: string }
-const { number, title, introduction, id } = Astro.props;
+interface Props { title: string; introduction?: string; id: string }
+const { title, introduction, id } = Astro.props;
 ---
 <div class="section-heading">
-  <span class="section-number" aria-hidden="true">{number}</span>
   <h2 id={id}>{title}</h2>
   {introduction && <p>{introduction}</p>}
 </div>

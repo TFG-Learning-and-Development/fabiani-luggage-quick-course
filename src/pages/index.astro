@@ -1,5 +1,5 @@
 ---
-import { ArrowRight, UserRound, ArrowUpRight } from '@lucide/astro';
+import { ArrowRight } from '@lucide/astro';
 import Navigation from '../components/Navigation.astro';
 import SectionHeading from '../components/SectionHeading.astro';
 import ProductRange from '../components/ProductRange.astro';
@@ -8,7 +8,7 @@ import Selling from '../components/Selling.astro';
 import Conversation from '../components/Conversation.astro';
 import Assessment from '../components/Assessment.astro';
 import { course } from '../content/course';
-import { asset, config } from '../config';
+import { asset, assetFile } from '../config';
 import '../styles/course.css';
 ---
 <!doctype html>
@@ -21,7 +21,7 @@ import '../styles/course.css';
     <meta name="robots" content="noindex, nofollow" />
     <title>{course.title} | Quick Course</title>
   </head>
-  <body style={`--pattern-image: url('${asset('pattern')}')`}>
+  <body style={`--pattern-image: url('${assetFile('pattern background.svg')}')`}>
     <Navigation />
     <main id="main">
       <section id="overview" class="overview" aria-labelledby="course-title" data-course-section>
@@ -30,20 +30,20 @@ import '../styles/course.css';
           <img src={asset('hero')} width="2564" height="994" alt="Fabiani Luggage black-and-gold crest and wordmark artwork." fetchpriority="high" />
         </div>
         <div class="overview-content wrap">
-          <div><span class="section-number" aria-hidden="true">01</span><h2>{course.overview.title}</h2>{course.overview.paragraphs.map(paragraph => <p>{paragraph}</p>)}</div>
+          <div><h2>{course.overview.title}</h2>{course.overview.paragraphs.map(paragraph => <p>{paragraph}</p>)}</div>
           <figure class="lifestyle-photo"><img src={asset('lifestyle')} width="1200" height="1800" alt="Black Fabiani luggage beside a traveller dressed in light trousers." /><figcaption>&ldquo;{course.overview.quote}&rdquo;</figcaption></figure>
         </div>
       </section>
       <div class="pattern-band">
         <section id="customer-moment" class="section wrap" aria-labelledby="travel-title" data-course-section>
-          <SectionHeading number="02" id="travel-title" title={course.travel.title} introduction={course.travel.introduction} />
+          <SectionHeading id="travel-title" title={course.travel.title} introduction={course.travel.introduction} />
           <ol class="travel-flow" aria-label="Journey to Customer benefit">
             {course.travel.flow.map((label, index) => <li><img src={asset(label.toLowerCase())} width="276" height="276" alt="" loading="lazy" /><span>{label}</span>{index < 3 && <ArrowRight class="flow-arrow" aria-hidden="true" />}</li>)}
           </ol>
           <div class="customer-discovery">
-            <div class="discovery-quote"><span class="avatar"><UserRound size={28} aria-hidden="true" /></span><div><h3>Customer</h3><blockquote>&ldquo;{course.travel.quote}&rdquo;</blockquote></div></div>
+            <div class="discovery-quote"><span class="avatar"><img src={asset('customer-avatar')} width="282" height="282" alt="" /></span><div><h3>Customer</h3><blockquote>&ldquo;{course.travel.quote}&rdquo;</blockquote></div></div>
             <h3 class="discovery-heading">Ask three simple questions:</h3>
-            <ol class="discovery-questions">{course.travel.questions.map((question, index) => <li><span aria-hidden="true">0{index + 1}</span><p>{question}</p></li>)}</ol>
+            <ol class="discovery-questions">{course.travel.questions.map(question => <li><p>{question}</p></li>)}</ol>
           </div>
           <aside class="dark-note"><h3>Key message:</h3>{course.travel.keyMessage.map(paragraph => <p>{paragraph}</p>)}</aside>
         </section>
@@ -54,8 +54,7 @@ import '../styles/course.css';
       <Assessment />
     </main>
     <footer class="wrap site-footer">
-      <span>Fabiani Luggage</span>
-      {config.peopleConnectUrl && <a class="primary-button" href={config.peopleConnectUrl}>Return to People Connect<ArrowUpRight size={18} aria-hidden="true" /></a>}
+      <span class="return-label"><span>Return to <strong>People Connect</strong></span></span>
     </footer>
     <script>
       import '../scripts/course';

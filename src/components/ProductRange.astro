@@ -1,23 +1,22 @@
 ---
 import { ChevronRight, Info } from '@lucide/astro';
 import { cases, course } from '../content/course';
-import { asset } from '../config';
+import { assetFile } from '../config';
 import SectionHeading from './SectionHeading.astro';
 ---
 <section id="product-range" class="section wrap" aria-labelledby="range-title" data-course-section>
-  <SectionHeading number="03" id="range-title" title={course.range.title} introduction={course.range.introduction} />
+  <SectionHeading id="range-title" title={course.range.title} introduction={course.range.introduction} />
   <div class="range-tool" data-range>
     <div class="range-selectors" data-tablist aria-label="Case size">
       {cases.map(item => <button type="button" id={`tab-${item.id}`} data-tab={item.id} aria-controls={`case-${item.id}`}><span>{item.label}</span><ChevronRight size={18} aria-hidden="true" /></button>)}
     </div>
     <div class="range-panels">
-      {cases.map(item => <article class="case-panel" id={`case-${item.id}`} data-case={item.id} aria-labelledby={`case-heading-${item.id}`}>
+      {cases.map(item => <article class="case-panel" id={`case-${item.id}`} data-case={item.id} aria-label={item.label}>
         <figure>
-          <img src={asset(item.image)} width={item.id === 'cabin' ? 608 : 900} height={item.id === 'cabin' ? 760 : 1350} alt={item.imageAlt} loading="lazy" />
+          <img src={assetFile(item.image)} width={item.imageWidth} height={item.imageHeight} alt={item.imageAlt} loading="lazy" />
           {item.imageCaption && <figcaption>{item.imageCaption}</figcaption>}
         </figure>
         <div class="case-copy">
-          <h3 id={`case-heading-${item.id}`}>{item.label}</h3>
           <h4>Best suited to</h4><p>{item.suited}</p>
           <h4>Selling story</h4><p>{item.story}</p>
         </div>

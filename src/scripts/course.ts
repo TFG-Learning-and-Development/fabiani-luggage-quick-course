@@ -101,12 +101,10 @@ function initAssessment() {
   const render = (focus = false) => {
     const completed = isComplete();
     const score = progress.responses.filter((response, index) => response.submitted && response.selected === questions[index].correct).length;
-    const submittedCount = progress.responses.filter(response => response.submitted).length;
     const showResults = completed && progress.showResults;
     form.hidden = showResults;
     results.hidden = !showResults;
     get('[data-completed-actions]', root).hidden = !completed || showResults;
-    get('[data-assessment-status]').textContent = completed ? `Assessment complete: ${score} / 3` : submittedCount ? `Assessment: ${submittedCount} / 3 answered` : 'Assessment';
     panels.forEach((panel, index) => {
       panel.hidden = index !== progress.questionIndex;
       const response = progress.responses[index];
@@ -199,12 +197,27 @@ function initAssessment() {
 
 function initNavigation() {
   const header = get('.site-header');
+  const navigation = get<HTMLElement>('#course-navigation', header);
+  const toggle = get<HTMLButtonElement>('[data-nav-toggle]', header);
   const nodes = sections.map(section => get(`#${section.id}`));
   const links = all<HTMLAnchorElement>('[data-nav]');
   const savedSection = progress.lastSection;
   const explicitHash = location.hash;
   const navigationEntry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
   const restoring = !explicitHash || navigationEntry?.type === 'reload';
+  const setMenuOpen = (open: boolean, returnFocus = false) => {
+    toggle.setAttribute('aria-expanded', String(open));
+    toggle.setAttribute('aria-label', open ? 'Close course navigation' : 'Open course navigation');
+    toggle.title = open ? 'Close course navigation' : 'Open course navigation';
+    navigation.toggleAttribute('data-open', open);
+    if (returnFocus) toggle.focus();
+  };
+  toggle.addEventListener('click', () => setMenuOpen(toggle.getAttribute('aria-expanded') !== 'true'));
+  header.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && toggle.getAttribute('aria-expanded') === 'true') setMenuOpen(false, true);
+  });
+  matchMedia('(min-width: 801px)').addEventListener('change', event => { if (event.matches) setMenuOpen(false); });
+  header.dataset.navEnhanced = 'true';
   const update = () => {
     const offset = header.getBoundingClientRect().height + 70;
     let index = 0;
@@ -214,10 +227,6 @@ function initNavigation() {
       if (link.dataset.nav === current.nav) link.setAttribute('aria-current', 'location');
       else link.removeAttribute('aria-current');
     });
-    const assessmentLink = get('[data-assessment-link]');
-    if (current.id === 'assessment') assessmentLink.setAttribute('aria-current', 'location');
-    else assessmentLink.removeAttribute('aria-current');
-    get('[data-reading]').textContent = `Reading ${index + 1} / ${sections.length} - ${current.label}`;
     if (progress.lastSection !== current.id) { progress.lastSection = current.id; persist(); }
   };
   const setOffset = () => document.documentElement.style.setProperty('--header-height', `${Math.ceil(header.getBoundingClientRect().height) + 16}px`);
@@ -239,9 +248,10 @@ function initNavigation() {
     addEventListener('resize', update);
   });
   // A section link remains shareable; persisted reading position takes over on reload.
-  links.concat(get<HTMLAnchorElement>('[data-assessment-link]')).forEach(link => link.addEventListener('click', () => {
+  links.forEach(link => link.addEventListener('click', () => {
     const id = link.hash.slice(1);
     if (sections.some(section => section.id === id)) { progress.lastSection = id; persist(); }
+    setMenuOpen(false);
   }));
 }
 
