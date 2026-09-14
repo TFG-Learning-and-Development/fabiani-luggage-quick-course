@@ -36,7 +36,7 @@ try {
   assert.equal(new URL(page.url()).hash, '#product-range');
   await page.getByRole('tab', { name: 'Medium Case', exact: true }).click();
   assert.equal(await page.getByRole('tabpanel').count(), 1);
-  await page.locator('[data-question="0"] input').nth(2).check();
+  await page.locator('[data-question="0"] .answer-option').nth(2).click();
   await page.getByRole('button', { name: 'Check answer', exact: true }).click();
   assert.match(await page.locator('[data-feedback="0"]').innerText(), /Correct/);
   await page.reload();

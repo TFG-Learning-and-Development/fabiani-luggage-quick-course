@@ -19,7 +19,11 @@ npm.cmd run build
 npm.cmd run preview -- --port 4323
 ```
 
-Astro builds into `dist/`. There is no runtime server dependency in the generated course. Serve `dist/` over HTTP to review it. For a background preview, append `--background`; manage it with `npx.cmd astro preview status` and `npx.cmd astro preview stop`.
+Astro builds into `dist/`. The post-build step adds the SCORM runtime and `imsmanifest.xml`; there is no runtime server dependency in the generated course. Serve `dist/` over HTTP to review it. For a background preview, append `--background`; manage it with `npx.cmd astro preview status` and `npx.cmd astro preview stop`.
+
+## SCORM package
+
+`npm.cmd run build` produces a SCORM 1.2-compatible course in `dist/`. ZIP the contents of `dist/` so `imsmanifest.xml` sits at the root of the archive, then upload that ZIP to the LMS. The wrapper follows the other quick courses: it initializes the LMS API, saves the current location and session time, and marks the course complete when it launches.
 
 ## Project layout
 
@@ -30,6 +34,7 @@ Astro builds into `dist/`. There is no runtime server dependency in the generate
 - `src/styles/course.css`: central visual tokens and responsive styles.
 - `public/images/`: supplied artwork and optimised local images extracted from the PDF.
 - `tests/course.spec.ts`: browser interaction, persistence, accessibility and responsive checks.
+- `scripts/build-scorm.mjs`: post-build SCORM 1.2 runtime and manifest generation.
 - `scripts/inspect-pdf.py`, `scripts/extract-assets.py`: reproducible PDF inspection and extraction (optional Python tools; require PyMuPDF and Pillow). Run with the source PDF path as the first argument. Generated `design-reference/` evidence is local and excluded from source control.
 
 ## Configuration
@@ -44,7 +49,7 @@ npm.cmd run preview -- --port 4324
 
 Remove that environment variable before rebuilding for `/`: `Remove-Item Env:COURSE_BASE_PATH`. All local asset URLs include the configured base. Navigation uses same-page anchors.
 
-Progress uses `fabiani-luggage:progress:v1` in the same browser/device. Responses, submitted feedback, current question and reading section persist. Completion means all three questions were submitted, regardless of score. A fresh attempt clears all three responses. Local progress does **not** report completion to an LMS.
+Progress uses `fabiani-luggage:progress:v1` in the same browser/device. Responses, submitted feedback, current question and reading section persist. Local completion means all three questions were submitted, regardless of score. A fresh attempt clears all three responses. This local assessment state is separate from the SCORM wrapper's launch completion signal.
 
 Without JavaScript, all product panels, conversation exchanges, questions and expandable answer discussions remain available. Scoring and persistence need JavaScript.
 
@@ -64,6 +69,6 @@ An existing Chromium binary can be used by setting `PLAYWRIGHT_CHROMIUM_EXECUTAB
 
 The checks cover all 12 assessment choices and feedback, scores 0-3, out-of-order submission, answer locking, results, question review, retry, refresh, corrupted and blocked storage, all product/conversation states, keyboard controls, reduced motion, no-JavaScript content and local image loading. Responsive screenshots use 1440, 768, 390 and 320 pixel widths. Axe checks target WCAG A/AA rules at desktop/mobile and the submitted assessment state; they are not a substitute for a full assistive-technology audit.
 
-The subpath build was also browser-verified. Reproduce it with `npm.cmd run build -- --base /fabiani-luggage-quick-course/ --outDir ./dist-base`, then `node scripts/verify-base.mjs`. That script starts a temporary local static test server and closes it when finished.
+The subpath build was also browser-verified. Reproduce it with `npm.cmd exec astro build -- --base /fabiani-luggage-quick-course/ --outDir ./dist-base`, then `node scripts/verify-base.mjs`. That script starts a temporary local static test server and closes it when finished.
 
-No reference course was supplied, and no kit/starter conventions were copied. See the review checklist for responsive adaptations, font fallback and outstanding approvals. This workspace began empty; no GitHub changes have been pushed and nothing has been deployed.
+No visual reference course was supplied, and no kit/starter conventions were copied. See the review checklist for responsive adaptations, font fallback and outstanding approvals. Nothing has been deployed.
