@@ -29,16 +29,13 @@ export const course = {
     title: 'The Art of Travel',
     introduction: 'Fabiani luggage should feel like a natural continuation of the Fabiani wardrobe. It is crafted for the modern traveller who needs to move with ease, protect their clothing and arrive looking polished.',
     flow: ['Journey', 'Wardrobe', 'Luggage', 'Benefit'],
-    quote: 'I’m looking for a case that will work for my next trip and I want it to fit in with what I’m wearing.',
     questions: [
       'Where are you travelling to, and how long will you be away?',
       'What will you need to pack for the trip?',
       'How do you want to arrive: light, organised, polished or prepared for different moments?',
     ],
-    keyMessage: [
-      'Do not sell the case on its own. First understand the Customer’s journey, then show how the case supports that journey by protecting clothing, organising essentials and making movement easier.',
-      'When a Customer says, “I need a suitcase for a trip,” pause before recommending a case. Use the conversation to understand where they are going, what they need to pack and how they want to arrive.',
-    ],
+    keyMessage: 'Do not sell the case on its own. First understand the Customer’s journey, then show how the case supports that journey by protecting clothing, organising essentials and making movement easier.',
+    askIntroduction: 'When a Customer says, “I need a suitcase for a trip,” pause before recommending a case. Use the conversation to understand where they are going, what they need to pack and how they want to arrive.',
   },
   range: {
     title: 'Match the case to the Journey',

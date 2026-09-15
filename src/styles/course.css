@@ -76,12 +76,13 @@ button, a, input, summary { touch-action: manipulation; }
 .travel-flow img { width: 102px; height: 102px; border-radius: 50%; }
 .flow-arrow { position: absolute; top: 39px; right: -12px; width: 25px; color: var(--ink); }
 .customer-discovery { max-width: 840px; margin-inline: auto; }
+.dark-note + .customer-discovery { margin-top: 64px; }
 .discovery-quote { display: grid; grid-template-columns: 64px 1fr; gap: 20px; align-items: start; }
 .avatar { background: var(--gold); color: white; border-radius: 50%; width: 64px; height: 64px; display: grid; place-items: center; overflow: hidden; }
 .avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
 .discovery-quote h3 { color: var(--gold-text); font-size: 14px; margin-bottom: 8px; }
 .exchange h3 { color: var(--gold-text); font-size: var(--body-size); margin-bottom: 8px; }
-.discovery-quote blockquote, .exchange blockquote { background: white; border: 1px solid #dedbda; border-radius: var(--radius); box-shadow: 0 3px 7px #23191d0c; padding: 22px 26px; font-size: var(--body-size); }
+.discovery-quote > p, .exchange blockquote { background: white; border: 1px solid #dedbda; border-radius: var(--radius); box-shadow: 0 3px 7px #23191d0c; padding: 22px 26px; font-size: var(--body-size); }
 .discovery-heading { color: var(--gold-text); text-align: center; margin: 32px 0 18px; }
 .discovery-questions { list-style: none; padding: 0 0 0 70px; margin: 0; display: grid; gap: 10px; }
 .discovery-questions li { display: flex; align-items: center; gap: 20px; background: white; border: 1px solid #dedbda; border-radius: var(--radius); padding: 16px 22px; }
@@ -273,11 +274,12 @@ summary { cursor: pointer; }
   .flow-arrow { top: 23px; width: 15px; right: -7px; }
   .avatar { width: 44px; height: 44px; }
   .discovery-quote { grid-template-columns: 44px 1fr; gap: 10px; }
-  .discovery-quote blockquote, .exchange blockquote { padding: 16px; }
+  .discovery-quote > p, .exchange blockquote { padding: 16px; }
   .discovery-questions { padding: 0; }
   .discovery-questions li { padding: 16px; gap: 12px; }
   .discovery-heading { font-size: 18px; }
   .dark-note { padding: 24px 20px; text-align: left; }
+  .dark-note + .customer-discovery { margin-top: 52px; }
   .range-tool { padding: 18px; gap: 22px; }
   .range-tool[data-enhanced] .range-selectors { grid-template-columns: 1fr; gap: 10px; }
   .range-selectors button { min-height: 54px; }

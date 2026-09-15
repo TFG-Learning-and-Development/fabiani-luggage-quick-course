@@ -40,12 +40,12 @@ import '../styles/course.css';
           <ol class="travel-flow" aria-label="Journey to Customer benefit">
             {course.travel.flow.map((label, index) => <li><img src={asset(label.toLowerCase())} width="276" height="276" alt="" loading="lazy" /><span>{label}</span>{index < 3 && <ArrowRight class="flow-arrow" aria-hidden="true" />}</li>)}
           </ol>
+          <aside class="dark-note"><h3>Key message:</h3><p>{course.travel.keyMessage}</p></aside>
           <div class="customer-discovery">
-            <div class="discovery-quote"><span class="avatar"><img src={asset('customer-avatar')} width="282" height="282" alt="" /></span><div><h3>Customer</h3><blockquote>&ldquo;{course.travel.quote}&rdquo;</blockquote></div></div>
+            <div class="discovery-quote"><span class="avatar"><img src={asset('customer-avatar')} width="282" height="282" alt="" /></span><p>{course.travel.askIntroduction}</p></div>
             <h3 class="discovery-heading">Ask three simple questions:</h3>
             <ol class="discovery-questions">{course.travel.questions.map(question => <li><p>{question}</p></li>)}</ol>
           </div>
-          <aside class="dark-note"><h3>Key message:</h3>{course.travel.keyMessage.map(paragraph => <p>{paragraph}</p>)}</aside>
         </section>
       </div>
       <ProductRange />

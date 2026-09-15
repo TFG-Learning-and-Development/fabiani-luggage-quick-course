@@ -24,6 +24,17 @@ test('all supplied instructional content and local assets render', async ({ page
     await expect(page.getByText(step.action, { exact: true })).toBeVisible();
     await expect(page.getByText(step.benefit, { exact: true })).toBeVisible();
   }
+  const keyMessage = page.getByRole('heading', { name: 'Key message:' }).locator('..');
+  const customerExample = page.locator('.customer-discovery');
+  const keyMessageTop = await keyMessage.evaluate(element => element.getBoundingClientRect().top);
+  const customerExampleTop = await customerExample.evaluate(element => element.getBoundingClientRect().top);
+  const journeyFlowTop = await page.locator('.travel-flow').evaluate(element => element.getBoundingClientRect().top);
+  expect(journeyFlowTop).toBeLessThan(keyMessageTop);
+  expect(keyMessageTop).toBeLessThan(customerExampleTop);
+  await expect(keyMessage).toContainText(course.travel.keyMessage);
+  await expect(keyMessage).not.toContainText(course.travel.askIntroduction);
+  await expect(customerExample).toContainText(course.travel.askIntroduction);
+  await expect(page.getByText('I’m looking for a case that will work for my next trip and I want it to fit in with what I’m wearing.', { exact: true })).toHaveCount(0);
   await expect(page.getByText(course.range.warning, { exact: true })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Return to People Connect' })).toHaveCount(0);
   await expect(page.locator('.return-label')).toHaveText('Return to People Connect');
