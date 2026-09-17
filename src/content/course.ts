@@ -40,6 +40,7 @@ export const course = {
   range: {
     title: 'Match the case to the Journey',
     introduction: 'Connect each case size to the Customer’s travel purpose so the recommendation feels practical and relevant.',
+    instruction: 'Click each case size to learn what it is best suited to and how to position the selling story.',
     warning: 'Trip-duration guidance is indicative. Use confirmed product dimensions and capacity from the product team where exact packing or airline guidance is required.',
   },
   features: {
@@ -66,6 +67,7 @@ export const course = {
   conversation: {
     title: 'Customer conversation',
     scenario: 'A Customer is looking for luggage for a three-day work trip. The store employee does not jump straight to a product. They first understand the journey, connect the Customer’s need to the right case and explain the benefit in a clear, Customer-relevant way.',
+    instruction: 'Click on the arrows below to see the whole conversation.',
     why: 'The store employee follows the Ask, Connect and Recommend framework. They ask about the journey and packing need, connect the Customer’s answers to the cabin case and explain the features as benefits: organised packing, easy movement and a polished Fabiani aesthetic.',
   },
   assessment: {
@@ -121,22 +123,22 @@ export const conversation: ConversationStep[] = [
   ] },
 ];
 
-const feedback = {
+const storyboardFeedback = {
   businessTrip: {
     correct: 'Correct. A two-night business trip needs a refined, easy-to-move case for essentials. The cabin case supports organised packing and a polished Fabiani look.',
-    incorrect: 'Review the Customer’s journey. The trip is short, so the Customer needs a compact, organised and easy-to-move case.',
+    incorrect: 'Incorrect. Review the Customer’s journey. The trip is short, so the Customer needs a compact, organised and easy-to-move case.',
   },
   wedding: {
     correct: 'Correct. The Customer needs space and organisation for formalwear, casualwear and footwear. The recommendation should support the occasion and help protect the Customer’s wardrobe.',
-    incorrect: 'Review what the Customer needs to pack. The recommendation should not focus only on size or price. It should support wardrobe protection, space and organisation for the occasion.',
+    incorrect: 'Incorrect. Review what the Customer needs to pack. The recommendation should not focus only on size or price. It should support wardrobe protection, space and organisation for the occasion.',
   },
   international: {
     correct: 'Correct. A two-week international trip needs more capacity than a short-trip option. The large case gives the Customer space for a fuller wardrobe, footwear, accessories and travel essentials.',
-    incorrect: 'Review the trip length and packing need. A short-trip case will not give the Customer enough space for a two-week international journey.',
+    incorrect: 'Incorrect. Review the trip length and packing need. A short-trip case will not give the Customer enough space for a two-week international journey.',
   },
   frequentTraveller: {
     correct: 'Correct. The Customer’s main need is movement. Easy mobility is the strongest benefit because it helps the Customer move through travel environments more easily while keeping a refined look.',
-    incorrect: 'Review the Customer’s main need. The scenario focuses on movement through airports, hotels and city meetings, not extra space, occasionwear protection or buying more than one case.',
+    incorrect: 'Incorrect. Review the Customer’s main need. The scenario focuses on movement through airports, hotels and city meetings, not extra space, occasionwear protection or buying more than one case.',
   },
 };
 
@@ -147,10 +149,10 @@ export const questions: Question[] = [
     scenario: 'I am flying to Cape Town for two nights for meetings, and I need something that looks smart but is easy to travel with.',
     prompt: 'What is the best recommendation for this Customer?',
     answers: [
-      { text: 'Recommend the large case because it has the most space.', feedback: feedback.businessTrip.incorrect },
-      { text: 'Recommend multiple cases because the Customer is travelling for work.', feedback: feedback.businessTrip.incorrect },
-      { text: 'Recommend the small / cabin case because it supports a short business trip, helps the Customer travel lighter and keeps the look polished.', feedback: feedback.businessTrip.correct },
-      { text: 'Recommend no case until the Customer chooses their outfits.', feedback: feedback.businessTrip.incorrect },
+      { text: 'Recommend the large case because it has the most space.', feedback: storyboardFeedback.businessTrip.incorrect },
+      { text: 'Recommend multiple cases because the Customer is travelling for work.', feedback: storyboardFeedback.businessTrip.incorrect },
+      { text: 'Recommend the small / cabin case because it supports a short business trip, helps the Customer travel lighter and keeps the look polished.', feedback: storyboardFeedback.businessTrip.correct },
+      { text: 'Recommend no case until the Customer chooses their outfits.', feedback: storyboardFeedback.businessTrip.incorrect },
     ],
   },
   {
@@ -159,10 +161,10 @@ export const questions: Question[] = [
     scenario: 'I am going to a destination wedding and need to pack a suit, casual clothes and extra shoes.',
     prompt: 'Which recommendation best supports this Customer’s wardrobe need?',
     answers: [
-      { text: 'Recommend the small / cabin case because the Customer only needs one outfit.', feedback: feedback.wedding.incorrect },
-      { text: 'Recommend a medium case if the Customer wants flexibility, or a large case if they need more space for formalwear, casualwear and footwear.', feedback: feedback.wedding.correct },
-      { text: 'Recommend multiple cases because all occasion wear needs separate luggage.', feedback: feedback.wedding.incorrect },
-      { text: 'Recommend the case with the lowest price first.', feedback: feedback.wedding.incorrect },
+      { text: 'Recommend the small / cabin case because the Customer only needs one outfit.', feedback: storyboardFeedback.wedding.incorrect },
+      { text: 'Recommend a medium case if the Customer wants flexibility, or a large case if they need more space for formalwear, casualwear and footwear.', feedback: storyboardFeedback.wedding.correct },
+      { text: 'Recommend multiple cases because all occasion wear needs separate luggage.', feedback: storyboardFeedback.wedding.incorrect },
+      { text: 'Recommend the case with the lowest price first.', feedback: storyboardFeedback.wedding.incorrect },
     ],
   },
   {
@@ -171,10 +173,10 @@ export const questions: Question[] = [
     scenario: 'I am travelling overseas for two weeks and want enough space for different looks.',
     prompt: 'Which case direction should you recommend?',
     answers: [
-      { text: 'Recommend the small / cabin case because it keeps the Customer travelling light.', feedback: feedback.international.incorrect },
-      { text: 'Recommend the medium case because it works for every trip.', feedback: feedback.international.incorrect },
-      { text: 'Recommend the large case because it gives the Customer generous space for a fuller wardrobe, footwear, accessories and travel essentials.', feedback: feedback.international.correct },
-      { text: 'Recommend no case until the Customer confirms every outfit.', feedback: feedback.international.incorrect },
+      { text: 'Recommend the small / cabin case because it keeps the Customer travelling light.', feedback: storyboardFeedback.international.incorrect },
+      { text: 'Recommend the medium case because it works for every trip.', feedback: storyboardFeedback.international.incorrect },
+      { text: 'Recommend the large case because it gives the Customer generous space for a fuller wardrobe, footwear, accessories and travel essentials.', feedback: storyboardFeedback.international.correct },
+      { text: 'Recommend no case until the Customer confirms every outfit.', feedback: storyboardFeedback.international.incorrect },
     ],
   },
   {
@@ -183,10 +185,10 @@ export const questions: Question[] = [
     scenario: 'I travel often for work and move between airports, hotels and city meetings. I need something that is easy to move and still looks refined.',
     prompt: 'Which product feature and Customer benefit should you focus on first?',
     answers: [
-      { text: 'Easy mobility, because it helps the Customer move through airports, hotels and city environments more easily.', feedback: feedback.frequentTraveller.correct },
-      { text: 'Protective structure, because it is mainly for transporting occasionwear.', feedback: feedback.frequentTraveller.incorrect },
-      { text: 'Large capacity, because every work traveller needs the biggest case.', feedback: feedback.frequentTraveller.incorrect },
-      { text: 'Multiple-case travel, because frequent travellers should always buy more than one case.', feedback: feedback.frequentTraveller.incorrect },
+      { text: 'Easy mobility, because it helps the Customer move through airports, hotels and city environments more easily.', feedback: storyboardFeedback.frequentTraveller.correct },
+      { text: 'Protective structure, because it is mainly for transporting occasionwear.', feedback: storyboardFeedback.frequentTraveller.incorrect },
+      { text: 'Large capacity, because every work traveller needs the biggest case.', feedback: storyboardFeedback.frequentTraveller.incorrect },
+      { text: 'Multiple-case travel, because frequent travellers should always buy more than one case.', feedback: storyboardFeedback.frequentTraveller.incorrect },
     ],
   },
 ];
@@ -194,5 +196,5 @@ export const questions: Question[] = [
 export const authoringMetadata = {
   instructionalCopy: { source: 'supplied-storyboard', scope: 'PDF copy plus the approved case, conversation and assessment copy in Laggage SB - v1.docx.' },
   assetDescriptions: { source: 'authored-interface', scope: 'Image alternative text and range-image captions.' },
-  interface: { source: 'authored-interface', scope: 'Progress, assessment controls, results, answer review, no-JavaScript notices and accessibility labels.' },
+  interface: { source: 'authored-interface', scope: 'Progress, assessment controls, instant feedback, no-JavaScript notices and accessibility labels.' },
 } satisfies Record<string, { source: Provenance; scope: string }>;

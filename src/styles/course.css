@@ -46,6 +46,8 @@ button, a, input, summary { touch-action: manipulation; }
 .section { padding-block: 64px; scroll-margin-top: 8px; }
 .section-heading { max-width: 1050px; margin: 0 auto 36px; text-align: center; }
 .section-heading p { margin: 16px auto 0; max-width: 1000px; }
+.activity-instruction { font-size: var(--body-size); }
+.range-instruction { max-width: 1000px; margin: -18px auto 30px; text-align: center; }
 .site-header { position: sticky; top: 0; z-index: 20; background: #fffffff5; padding-top: 18px; backdrop-filter: blur(10px); }
 .nav-shell { display: flex; align-items: center; gap: 36px; background: var(--ink); color: white; min-height: 60px; padding: 12px 24px; border-radius: 40px; }
 .brand { flex-shrink: 0; display: block; }
@@ -133,7 +135,8 @@ button, a, input, summary { touch-action: manipulation; }
 .selling-relationship > div { background: white; border: 1px solid var(--line); border-radius: var(--panel-radius); padding: 22px 18px; }
 .selling-relationship h4 { font-size: var(--body-size); margin-bottom: 8px; }
 .selling-relationship p { font-size: var(--body-size); }
-.conversation-scenario { max-width: 1000px; text-align: center; margin: -14px auto 30px; }
+.conversation-introduction { max-width: 1000px; text-align: center; margin: -14px auto 30px; }
+.conversation-scenario + .activity-instruction { margin-top: 18px; }
 .conversation-tool { border: 1px solid var(--gold); border-radius: var(--panel-radius); padding: 30px 36px 24px; }
 .conversation-tool[data-enhanced] .conversation-content { min-height: 360px; }
 .conversation-step + .conversation-step { margin-top: 32px; border-top: 1px solid var(--line); padding-top: 32px; }
@@ -149,9 +152,6 @@ button, a, input, summary { touch-action: manipulation; }
 .icon-button { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 44px; height: 44px; padding: 0; border-radius: 50%; background: #000; background: linear-gradient(90deg, rgba(0, 0, 0, 1) 0%, rgba(163, 147, 98, 1) 100%); color: white; border: 1px solid var(--gold); }
 .icon-button svg { width: 20px; }
 .icon-button:hover:not(:disabled) { filter: brightness(1.12); }
-.primary-button, .text-button { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 46px; padding: 12px 22px; border: 1px solid var(--ink); border-radius: 5px; background: var(--ink); color: white; text-decoration: none; font-weight: 700; font-size: var(--body-size); }
-.primary-button:hover:not(:disabled) { background: #4a3e2d; }
-.text-button { background: transparent; color: var(--ink); border: 0; padding-inline: 0; }
 .assessment-section { padding-top: 0; }
 .assessment-tool { background: #efeeee; border: 1px solid #e3e0de; border-radius: var(--panel-radius); padding: 32px 36px 28px; }
 .assessment-title { color: var(--ink); font-size: var(--body-size); margin-bottom: 12px; }
@@ -180,24 +180,16 @@ button, a, input, summary { touch-action: manipulation; }
 .answer-option[data-incorrect='true']:has(input:checked) { border-color: var(--red); background: #fcf1ef; box-shadow: inset 0 0 0 1px var(--red); }
 .answer-option:has(input:disabled) { cursor: default; }
 .answer-feedback { background: var(--ink); color: white; border-radius: 5px; padding: 20px; margin-top: 24px; }
+.answer-feedback[data-outcome='correct'] { background: var(--green); }
+.answer-feedback[data-outcome='incorrect'] { background: var(--red); }
 .answer-feedback strong { color: var(--gold-light); font-size: var(--body-size); }
 .answer-feedback p { font-size: var(--body-size); }
-.eyebrow { color: var(--gold-text); font-size: 12px; font-weight: 700; margin-bottom: 16px; }
 .assessment-controls { display: flex; align-items: center; justify-content: space-between; gap: 24px; border-top: 1px solid #d7d2cf; margin-top: 30px; padding-top: 24px; }
-.results-heading { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 24px; margin-bottom: 24px; background: var(--ink); color: white; }
-.results-heading h3 { color: white; font-size: 26px; }
-.score { font-size: 24px; font-weight: 700; color: var(--gold-text); white-space: nowrap; }
-.answer-review { padding-left: 22px; margin: 18px 0 30px; }
-.answer-review li { padding: 18px 0; border-bottom: 1px solid #d7d2cf; }
-.answer-review h5 { font-size: var(--body-size); }
-.answer-review p { font-size: var(--body-size); margin-top: 8px; }
-[data-review-outcome] { font-weight: 700; }
-.completed-actions { text-align: right; margin-top: 20px; }
-.result-actions { display: flex; gap: 24px; flex-wrap: wrap; }
+.assessment-controls .pager { margin-left: auto; }
 .no-script-note { margin-bottom: 24px; }
 summary { cursor: pointer; }
-.site-footer { display: flex; justify-content: flex-end; padding-block: 0 40px; }
-.return-label { display: inline-flex; align-items: center; justify-content: center; gap: .3em; min-height: 46px; padding: 12px 28px; border-radius: 24px; background: var(--ink); color: white; font-size: 14px; }
+.site-footer { padding-block: 0 40px; text-align: center; }
+.return-label { font-size: var(--body-size); white-space: nowrap; }
 @media (min-width: 1500px) {
   .hero img { max-height: 430px; object-fit: cover; }
 }
@@ -301,7 +293,7 @@ summary { cursor: pointer; }
   .selling-relationship { grid-template-columns: 1fr; gap: 10px; }
   .selling-relationship .connector { transform: rotate(90deg); }
   .selling-relationship > div { padding: 20px; }
-  .conversation-scenario { text-align: left; }
+  .conversation-introduction, .range-instruction { text-align: left; }
   .conversation-tool { padding: 20px 14px; }
   .conversation-tool[data-enhanced] .conversation-content { min-height: 535px; }
   .exchange { grid-template-columns: 40px 1fr; gap: 8px; }
@@ -312,12 +304,10 @@ summary { cursor: pointer; }
   .assessment-section { padding-top: 0; }
   .assessment-tool { padding: 22px 16px; }
   .assessment-controls { flex-wrap: wrap; gap: 20px; }
-  .assessment-controls > .primary-button { width: 100%; }
   .assessment-controls .pager { width: 100%; }
   .pager > span { margin-right: auto; }
   .answer-option { padding: 14px 12px; gap: 9px; }
-  .results-heading { align-items: flex-start; flex-direction: column; gap: 10px; }
-  .site-footer { padding-bottom: 24px; }
+  .site-footer { width: calc(100% - 16px); padding-bottom: 24px; }
 }
 @media (prefers-reduced-motion: reduce) {
   :root { scroll-behavior: auto; }

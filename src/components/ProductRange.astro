@@ -6,6 +6,7 @@ import SectionHeading from './SectionHeading.astro';
 ---
 <section id="product-range" class="section wrap" aria-labelledby="range-title" data-course-section>
   <SectionHeading id="range-title" title={course.range.title} introduction={course.range.introduction} />
+  <p class="activity-instruction range-instruction">{course.range.instruction}</p>
   <div class="range-tool" data-range>
     <div class="range-selectors" data-tablist aria-label="Case size">
       {cases.map(item => <button type="button" id={`tab-${item.id}`} data-tab={item.id} aria-controls={`case-${item.id}`}><span>{item.label}</span><ChevronRight size={18} aria-hidden="true" /></button>)}

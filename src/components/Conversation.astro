@@ -6,7 +6,10 @@ import SectionHeading from './SectionHeading.astro';
 ---
 <section id="conversation" class="section wrap" aria-labelledby="conversation-title" data-course-section>
   <SectionHeading id="conversation-title" title={course.conversation.title} />
-  <p class="conversation-scenario"><strong>Scenario:</strong> {course.conversation.scenario}</p>
+  <div class="conversation-introduction">
+    <p class="conversation-scenario"><strong>Scenario:</strong> {course.conversation.scenario}</p>
+    <p class="activity-instruction">{course.conversation.instruction}</p>
+  </div>
   <div class="conversation-tool" data-conversation>
     <div class="conversation-content" aria-live="polite" aria-atomic="true">
       {conversation.map((step, index) => <div data-conversation-step={index} class="conversation-step">

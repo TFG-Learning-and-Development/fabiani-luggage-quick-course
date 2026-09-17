@@ -9,8 +9,25 @@ const start = async (page: Page) => {
 };
 const answer = async (page: Page, index: number, option: number) => {
   await page.locator(`[data-question="${index}"] .answer-option`).nth(option).click();
-  await page.getByRole('button', { name: 'Check answer', exact: true }).click();
 };
+const suppliedFeedback = [
+  {
+    correct: 'Correct. A two-night business trip needs a refined, easy-to-move case for essentials. The cabin case supports organised packing and a polished Fabiani look.',
+    incorrect: 'Incorrect. Review the Customer’s journey. The trip is short, so the Customer needs a compact, organised and easy-to-move case.',
+  },
+  {
+    correct: 'Correct. The Customer needs space and organisation for formalwear, casualwear and footwear. The recommendation should support the occasion and help protect the Customer’s wardrobe.',
+    incorrect: 'Incorrect. Review what the Customer needs to pack. The recommendation should not focus only on size or price. It should support wardrobe protection, space and organisation for the occasion.',
+  },
+  {
+    correct: 'Correct. A two-week international trip needs more capacity than a short-trip option. The large case gives the Customer space for a fuller wardrobe, footwear, accessories and travel essentials.',
+    incorrect: 'Incorrect. Review the trip length and packing need. A short-trip case will not give the Customer enough space for a two-week international journey.',
+  },
+  {
+    correct: 'Correct. The Customer’s main need is movement. Easy mobility is the strongest benefit because it helps the Customer move through travel environments more easily while keeping a refined look.',
+    incorrect: 'Incorrect. Review the Customer’s main need. The scenario focuses on movement through airports, hotels and city meetings, not extra space, occasionwear protection or buying more than one case.',
+  },
+];
 
 test('all supplied instructional content and local assets render', async ({ page }) => {
   const errors: string[] = [];
@@ -34,10 +51,12 @@ test('all supplied instructional content and local assets render', async ({ page
   await expect(keyMessage).toContainText(course.travel.keyMessage);
   await expect(keyMessage).not.toContainText(course.travel.askIntroduction);
   await expect(customerExample).toContainText(course.travel.askIntroduction);
+  await expect(page.getByText(course.range.instruction, { exact: true })).toBeVisible();
+  await expect(page.getByText(course.conversation.instruction, { exact: true })).toBeVisible();
   await expect(page.getByText('I’m looking for a case that will work for my next trip and I want it to fit in with what I’m wearing.', { exact: true })).toHaveCount(0);
   await expect(page.getByText(course.range.warning, { exact: true })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Return to People Connect' })).toHaveCount(0);
-  await expect(page.locator('.return-label')).toHaveText('Return to People Connect');
+  await expect(page.getByRole('link', { name: 'Return to People Connect to continue' })).toHaveCount(0);
+  await expect(page.locator('.return-label')).toHaveText('Return to People Connect to continue');
   const images = await page.locator('img').evaluateAll(async elements => {
     const images = elements as HTMLImageElement[];
     await Promise.all(images.map(async image => { image.loading = 'eager'; await image.decode().catch(() => {}); }));
@@ -87,82 +106,56 @@ test('conversation preserves supplied exchange and traverses all four steps', as
 
 for (let questionIndex = 0; questionIndex < questions.length; questionIndex++) {
   for (let choice = 0; choice < 4; choice++) {
-    test(`question ${questionIndex + 1}, option ${String.fromCharCode(65 + choice)}: feedback, score and review`, async ({ page }) => {
+    test(`question ${questionIndex + 1}, option ${String.fromCharCode(65 + choice)}: exact feedback and editable response`, async ({ page }) => {
       await start(page);
-      for (let index = 0; index < questions.length; index++) {
-        const selection = index === questionIndex ? choice : questions[index].correct;
-        await expect(page.locator('[data-check]')).toBeDisabled();
-        await answer(page, index, selection);
-        if (index < questions.length - 1) {
-          await expect(page.locator(`[data-feedback="${index}"]`)).toContainText(questions[index].answers[selection].feedback);
-          await expect(page.locator(`[data-question="${index}"] input`).first()).toBeDisabled();
-          await page.getByRole('button', { name: 'Next question', exact: true }).click();
-        }
-      }
-      const score = choice === questions[questionIndex].correct ? questions.length : questions.length - 1;
-      await expect(page.locator('[data-score]')).toHaveText(`${score} / ${questions.length} correct`);
-      await expect(page.locator(`[data-review="${questionIndex}"] [data-review-feedback]`)).toHaveText(questions[questionIndex].answers[choice].feedback);
-      await expect(page.locator('[data-results]')).toBeVisible();
+      for (let index = 0; index < questionIndex; index++) await page.getByRole('button', { name: 'Next question', exact: true }).click();
+      await answer(page, questionIndex, choice);
+      const correct = choice === questions[questionIndex].correct;
+      const feedback = page.locator(`[data-feedback="${questionIndex}"]`);
+      await expect(feedback).toHaveText(correct ? suppliedFeedback[questionIndex].correct : suppliedFeedback[questionIndex].incorrect);
+      await expect(feedback).toHaveAttribute('data-outcome', correct ? 'correct' : 'incorrect');
+      await expect(page.locator(`[data-question="${questionIndex}"] [data-correct]`)).toHaveCount(correct ? 1 : 0);
+      await expect(page.locator(`[data-question="${questionIndex}"] [data-incorrect]`)).toHaveCount(correct ? 0 : 1);
+      for (const input of await page.locator(`[data-question="${questionIndex}"] input`).all()) await expect(input).toBeEnabled();
+
+      const replacement = correct ? (choice + 1) % questions[questionIndex].answers.length : questions[questionIndex].correct;
+      await answer(page, questionIndex, replacement);
+      const replacementCorrect = replacement === questions[questionIndex].correct;
+      await expect(feedback).toHaveText(replacementCorrect ? suppliedFeedback[questionIndex].correct : suppliedFeedback[questionIndex].incorrect);
+      await expect(feedback).toHaveAttribute('data-outcome', replacementCorrect ? 'correct' : 'incorrect');
+      await expect(page.locator(`[data-question="${questionIndex}"] [data-correct]`)).toHaveCount(replacementCorrect ? 1 : 0);
+      await expect(page.locator(`[data-question="${questionIndex}"] [data-incorrect]`)).toHaveCount(replacementCorrect ? 0 : 1);
+      for (const input of await page.locator(`[data-question="${questionIndex}"] input`).all()) await expect(input).toBeEnabled();
+      await expect(page.getByRole('button', { name: 'Check answer', exact: true })).toHaveCount(0);
+      await expect(page.getByRole('button', { name: 'View results', exact: true })).toHaveCount(0);
     });
   }
 }
 
-test('assessment retains selected and submitted responses, restores state and retries fully', async ({ page }) => {
+test('assessment restores editable answers and never opens a results screen', async ({ page }) => {
   await start(page);
   await expect(page.getByRole('button', { name: 'Previous question', exact: true })).toBeDisabled();
-  await page.locator('[data-question="0"] .answer-option').nth(2).click();
+  await answer(page, 0, 0);
+  await expect(page.locator('[data-feedback="0"]')).toHaveText(suppliedFeedback[0].incorrect);
+  await expect(page.locator('[data-feedback="0"]')).toHaveCSS('background-color', 'rgb(149, 58, 52)');
+  await answer(page, 0, questions[0].correct);
+  await expect(page.locator('[data-feedback="0"]')).toHaveText(suppliedFeedback[0].correct);
+  await expect(page.locator('[data-feedback="0"]')).toHaveCSS('background-color', 'rgb(34, 98, 68)');
   await page.getByRole('button', { name: 'Next question', exact: true }).click();
-  await page.getByRole('button', { name: 'Previous question', exact: true }).click();
-  await expect(page.locator('[data-question="0"] input').nth(2)).toBeChecked();
-  await page.getByRole('button', { name: 'Check answer', exact: true }).click();
-  await page.getByRole('button', { name: 'Next question', exact: true }).click();
-  await page.locator('[data-question="1"] .answer-option').nth(1).click();
+  await answer(page, 1, questions[1].correct);
   await page.reload();
   await expect(page.locator('[data-question-count]')).toHaveText(`Question 2 of ${questions.length}`);
-  await expect(page.locator('[data-question="1"] input').nth(1)).toBeChecked();
+  await expect(page.locator('[data-question="1"] input').nth(questions[1].correct)).toBeChecked();
+  for (const input of await page.locator('[data-question="1"] input').all()) await expect(input).toBeEnabled();
+  await answer(page, 1, 0);
+  await expect(page.locator('[data-feedback="1"]')).toHaveText(suppliedFeedback[1].incorrect);
   await page.getByRole('button', { name: 'Previous question', exact: true }).click();
-  await expect(page.locator('[data-question="0"] input').nth(2)).toBeChecked();
-  await expect(page.locator('[data-question="0"] input').nth(2)).toBeDisabled();
-  await expect(page.locator('[data-feedback="0"]')).toContainText('Correct');
-  await page.getByRole('button', { name: 'Next question', exact: true }).click();
-  await page.getByRole('button', { name: 'Check answer', exact: true }).click();
-  await page.getByRole('button', { name: 'Next question', exact: true }).click();
-  await answer(page, 2, questions[2].correct);
-  await page.getByRole('button', { name: 'Next question', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Next question', exact: true })).toBeDisabled();
-  await answer(page, 3, questions[3].correct);
-  await page.reload();
-  await expect(page.locator('[data-score]')).toHaveText(`${questions.length} / ${questions.length} correct`);
-  await page.getByRole('button', { name: 'Review questions' }).click();
-  await expect(page.locator('[data-question="0"] input').nth(2)).toBeDisabled();
-  await page.getByRole('button', { name: 'View results' }).click();
-  await page.getByRole('button', { name: 'Try again' }).click();
-  await expect(page.locator('[data-question-count]')).toHaveText(`Question 1 of ${questions.length}`);
-  await expect(page.locator('[data-question="0"] input:checked')).toHaveCount(0);
-  await expect(page.locator('[data-check]')).toBeDisabled();
-  for (let index = 0; index < questions.length; index++) {
-    await answer(page, index, (questions[index].correct + 1) % questions[index].answers.length);
-    if (index < questions.length - 1) await page.getByRole('button', { name: 'Next question', exact: true }).click();
-  }
-  await expect(page.locator('[data-score]')).toHaveText(`0 / ${questions.length} correct`);
-  await expect(page.getByText('Assessment complete', { exact: true })).toBeVisible();
+  await expect(page.locator('[data-question="0"] input').nth(questions[0].correct)).toBeChecked();
+  for (const input of await page.locator('[data-question="0"] input').all()) await expect(input).toBeEnabled();
+  await expect(page.locator('[data-results], [data-completed-actions], [data-view-results]')).toHaveCount(0);
 });
 
-test('out-of-order submissions complete only when all questions are answered', async ({ page }) => {
-  await start(page);
-  for (let index = 1; index < questions.length; index++) {
-    await page.getByRole('button', { name: 'Next question', exact: true }).click();
-  }
-  await answer(page, questions.length - 1, 1);
-  await expect(page.locator('[data-results]')).toBeHidden();
-  for (let index = questions.length - 2; index >= 0; index--) {
-    await page.getByRole('button', { name: 'Previous question', exact: true }).click();
-    await answer(page, index, 0);
-  }
-  await expect(page.locator('[data-score]')).toHaveText(`0 / ${questions.length} correct`);
-});
-
-for (const invalid of ['{bad json', 'null', '{"version":99}', JSON.stringify({ version: 1, lastSection: 'assessment', questionIndex: 0, showResults: true, responses: [{ selected: 55, submitted: true }] })]) {
+for (const invalid of ['{bad json', 'null', '{"version":99}', JSON.stringify({ version: config.storageVersion, lastSection: 'assessment', questionIndex: 0, responses: [{ selected: 55 }] })]) {
   test(`invalid storage recovers: ${invalid.slice(0, 30)}`, async ({ page }) => {
     await page.addInitScript(({ key, value }) => localStorage.setItem(key, value), { key: config.storageKey, value: invalid });
     await start(page);
@@ -248,18 +241,18 @@ test('no-JavaScript fallback exposes all teaching, panels, exchanges and questio
   await context.close();
 });
 
-test('keyboard focus, reduced motion and submitted assessment accessibility', async ({ page }) => {
+test('keyboard focus, reduced motion and answered assessment accessibility', async ({ page }) => {
   await start(page);
   await page.keyboard.press('Tab');
   await expect(page.getByRole('link', { name: 'Skip to course content' })).toBeFocused();
   await page.keyboard.press('Enter');
   expect(await page.evaluate(() => getComputedStyle(document.documentElement).scrollBehavior)).toBe('auto');
-  const option = page.locator('[data-question="0"] input').first();
+  const option = page.locator('[data-question="0"] input').nth(questions[0].correct);
   await option.focus();
-  await option.press('ArrowRight');
-  await page.keyboard.press('ArrowRight');
-  await expect(page.locator('[data-question="0"] input').nth(2)).toBeChecked();
-  await page.getByRole('button', { name: 'Check answer', exact: true }).click();
+  await option.press('Space');
+  await expect(option).toBeChecked();
+  await expect(option).toBeFocused();
+  await expect(page.locator('[data-feedback="0"]')).toHaveAttribute('data-outcome', 'correct');
   const scan = await new AxeBuilder({ page }).include('#assessment').withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
   expect(scan.violations).toEqual([]);
 });
@@ -287,7 +280,7 @@ test('long mobile states stay within the viewport', async ({ page }) => {
     await answer(page, index, (questions[index].correct + 1) % questions[index].answers.length);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     if (index === 0) {
-      await expect(page.locator('[data-feedback="0"]')).toBeFocused();
+      await expect(page.locator('[data-feedback="0"]')).toHaveAttribute('data-outcome', 'incorrect');
       const feedback = (await page.locator('[data-feedback="0"]').boundingBox())!;
       const header = (await page.locator('.site-header').boundingBox())!;
       expect(feedback.y).toBeGreaterThanOrEqual(header.y + header.height);
@@ -297,7 +290,7 @@ test('long mobile states stay within the viewport', async ({ page }) => {
     }
     if (index < questions.length - 1) await page.getByRole('button', { name: 'Next question', exact: true }).click();
   }
-  await page.locator('[data-results]').screenshot({ path: 'test-results/mobile-results.png' });
+  await expect(page.getByRole('button', { name: 'View results', exact: true })).toHaveCount(0);
   const scan = await new AxeBuilder({ page }).include('#assessment').withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
   expect(scan.violations).toEqual([]);
 });

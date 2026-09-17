@@ -1,6 +1,6 @@
 import { questions } from '../content/course';
 import { sections } from '../config';
-import { freshProgress, readProgress, saveProgress } from './progress';
+import { readProgress, saveProgress } from './progress';
 
 const get = <T extends HTMLElement = HTMLElement>(selector: string, parent: ParentNode = document): T => {
   const element = parent.querySelector<T>(selector);
@@ -77,79 +77,46 @@ function initAssessment() {
   const root = get('[data-assessment]');
   const form = get<HTMLFormElement>('[data-quiz-form]', root);
   const panels = all('[data-question]', root);
-  const check = get<HTMLButtonElement>('[data-check]', root);
   const previous = get<HTMLButtonElement>('[data-question-previous]', root);
   const next = get<HTMLButtonElement>('[data-question-next]', root);
-  const results = get('[data-results]', root);
-  const isComplete = () => progress.responses.every(response => response.submitted);
   const render = (focus = false) => {
-    const completed = isComplete();
-    const score = progress.responses.filter((response, index) => response.submitted && response.selected === questions[index].correct).length;
-    const showResults = completed && progress.showResults;
-    form.hidden = showResults;
-    results.hidden = !showResults;
-    get('[data-completed-actions]', root).hidden = !completed || showResults;
+    form.hidden = false;
     panels.forEach((panel, index) => {
       panel.hidden = index !== progress.questionIndex;
       const response = progress.responses[index];
       const question = questions[index];
-      get<HTMLFieldSetElement>('fieldset', panel).disabled = response.submitted;
       all<HTMLInputElement>('input', panel).forEach((input, answerIndex) => {
         input.checked = response.selected === answerIndex;
         const label = input.closest('label')!;
         label.removeAttribute('data-correct');
         label.removeAttribute('data-incorrect');
-        if (response.submitted && answerIndex === question.correct) label.dataset.correct = 'true';
-        if (response.submitted && answerIndex === response.selected && answerIndex !== question.correct) label.dataset.incorrect = 'true';
+        if (response.selected === answerIndex) {
+          label.dataset[answerIndex === question.correct ? 'correct' : 'incorrect'] = 'true';
+        }
       });
       const feedback = get('[data-feedback]', panel);
-      feedback.hidden = !response.submitted;
-      if (response.submitted && response.selected !== null) {
+      feedback.hidden = response.selected === null;
+      feedback.removeAttribute('data-outcome');
+      if (response.selected !== null) {
+        feedback.dataset.outcome = response.selected === question.correct ? 'correct' : 'incorrect';
         get('[data-feedback-text]', feedback).textContent = question.answers[response.selected].feedback;
       }
     });
-    const current = progress.responses[progress.questionIndex];
-    check.disabled = current.selected === null || current.submitted;
-    get('span', check).textContent = current.submitted ? 'Answer checked' : 'Check answer';
     previous.disabled = progress.questionIndex === 0;
     next.disabled = progress.questionIndex === questions.length - 1;
     get('[data-question-count]', root).textContent = `Question ${progress.questionIndex + 1} of ${questions.length}`;
-    if (completed) {
-      get('[data-score]', root).textContent = `${score} / ${questions.length} correct`;
-      all('[data-review]', root).forEach((item, index) => {
-        const question = questions[index];
-        const selected = progress.responses[index].selected!;
-        const correct = selected === question.correct;
-        get('[data-review-outcome]', item).textContent = correct ? 'Correct' : 'Incorrect';
-        get('[data-review-answer]', item).textContent = `${String.fromCharCode(65 + selected)}. ${question.answers[selected].text}`;
-        get('[data-review-correct]', item).textContent = correct ? '' : `Recommended answer: ${String.fromCharCode(65 + question.correct)}. ${question.answers[question.correct].text}`;
-        get('[data-review-feedback]', item).textContent = question.answers[selected].feedback;
-      });
-    }
-    if (focus) (showResults ? get('[data-results-heading]', root) : get('h3', panels[progress.questionIndex])).focus({ preventScroll: true });
+    if (focus) get('h3', panels[progress.questionIndex]).focus({ preventScroll: true });
   };
   panels.forEach((panel, index) => {
     panel.addEventListener('change', event => {
-      if (!(event.target instanceof HTMLInputElement) || progress.responses[index].submitted) return;
-      progress.responses[index].selected = Number(event.target.value);
+      if (!(event.target instanceof HTMLInputElement)) return;
+      const response = progress.responses[index];
+      response.selected = Number(event.target.value);
       persist();
       render();
-    });
-  });
-  form.addEventListener('submit', event => {
-    event.preventDefault();
-    const response = progress.responses[progress.questionIndex];
-    if (response.selected === null || response.submitted) return;
-    response.submitted = true;
-    progress.showResults = isComplete();
-    persist();
-    render(progress.showResults);
-    if (progress.showResults) results.scrollIntoView({ block: 'start' });
-    else {
-      const feedback = get('[data-feedback]', panels[progress.questionIndex]);
-      feedback.focus({ preventScroll: true });
+      const feedback = get('[data-feedback]', panel);
       feedback.scrollIntoView({ block: 'start' });
-    }
+    });
   });
   const move = (delta: number) => {
     const index = progress.questionIndex + delta;
@@ -161,18 +128,6 @@ function initAssessment() {
   };
   previous.addEventListener('click', () => move(-1));
   next.addEventListener('click', () => move(1));
-  get('[data-retry]', root).addEventListener('click', () => {
-    progress = { ...freshProgress(), lastSection: 'assessment' };
-    persist();
-    render(true);
-    panels[0].scrollIntoView({ block: 'start' });
-  });
-  get('[data-view-results]', root).addEventListener('click', () => {
-    progress.showResults = true; persist(); render(true); results.scrollIntoView({ block: 'start' });
-  });
-  get('[data-review-questions]', root).addEventListener('click', () => {
-    progress.showResults = false; progress.questionIndex = 0; persist(); render(true); panels[0].scrollIntoView({ block: 'start' });
-  });
   render();
   root.dataset.enhanced = 'true';
   get('.assessment-controls', root).hidden = false;

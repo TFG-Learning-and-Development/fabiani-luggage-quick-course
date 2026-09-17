@@ -1,5 +1,5 @@
 ---
-import { ChevronLeft, ChevronRight, Check, RotateCcw, ArrowRight } from '@lucide/astro';
+import { ChevronLeft, ChevronRight, Check } from '@lucide/astro';
 import { course, questions } from '../content/course';
 ---
 <section id="assessment" class="section wrap assessment-section" aria-labelledby="assessment-title" data-course-section>
@@ -29,7 +29,6 @@ import { course, questions } from '../content/course';
         <noscript><details><summary>Answer discussion</summary><p>{question.answers[question.correct].text}</p><p>{question.answers[question.correct].feedback}</p></details></noscript>
       </div>)}
       <div class="assessment-controls" hidden>
-        <button class="primary-button" type="submit" data-check disabled><Check size={18} aria-hidden="true" /><span>Check answer</span></button>
         <div class="pager">
           <span data-question-count aria-live="polite">Question 1 of {questions.length}</span>
           <button type="button" class="icon-button" data-question-previous aria-label="Previous question" title="Previous question" disabled><ChevronLeft aria-hidden="true" /></button>
@@ -37,14 +36,5 @@ import { course, questions } from '../content/course';
         </div>
       </div>
     </form>
-    <div class="assessment-results" data-results hidden>
-      <div class="results-heading"><div><p class="eyebrow">Assessment complete</p><h3 tabindex="-1" data-results-heading>Your results</h3></div><p class="score" data-score></p></div>
-      <h4>Answer review</h4>
-      <ol class="answer-review">
-        {questions.map((question, index) => <li data-review={index}><h5>{question.prompt}</h5><p data-review-outcome></p><p><strong>Your answer: </strong><span data-review-answer></span></p><p data-review-correct></p><p data-review-feedback></p></li>)}
-      </ol>
-      <div class="result-actions"><button class="primary-button" type="button" data-retry><RotateCcw size={18} aria-hidden="true" />Try again</button><button class="text-button" type="button" data-review-questions>Review questions<ArrowRight size={18} aria-hidden="true" /></button></div>
-    </div>
-    <div class="completed-actions" data-completed-actions hidden><button class="text-button" type="button" data-view-results>View results<ArrowRight size={18} aria-hidden="true" /></button></div>
   </div>
 </section>

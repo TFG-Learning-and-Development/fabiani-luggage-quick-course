@@ -658,6 +658,7 @@ async function injectIntoHtml(htmlFile, config) {
   html = rewriteRootRelativeUrls(html, prefix, inferBasePath(html));
 
   html = html
+    .replace(/<title\b[^>]*>[\s\S]*?<\/title>\s*/i, '')
     .replace(/<script>window\.__SCORM_CONFIG__[\s\S]*?<\/script>\s*/g, '')
     .replace(/<script src="[^"]*scorm\/SCORM_API_wrapper\.js"><\/script>\s*/g, '')
     .replace(/<script src="[^"]*scorm\/scorm-adapter\.js"><\/script>\s*/g, '')

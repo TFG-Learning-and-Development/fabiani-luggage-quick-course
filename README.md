@@ -49,7 +49,7 @@ npm.cmd run preview -- --port 4324
 
 Remove that environment variable before rebuilding for `/`: `Remove-Item Env:COURSE_BASE_PATH`. All local asset URLs include the configured base. Navigation uses same-page anchors.
 
-Progress uses `fabiani-luggage:progress:v2` in the same browser/device. Responses, submitted feedback, current question and reading section persist. Local completion means all four storyboard questions were submitted, regardless of score. A fresh attempt clears all four responses. This local assessment state is separate from the SCORM wrapper's launch completion signal.
+Progress uses `fabiani-luggage:progress:v4` in the same browser/device. Selecting or changing an answer immediately shows its feedback, and every question remains editable. Responses, feedback, current question and reading section persist. This local assessment state is separate from the SCORM wrapper's launch completion signal.
 
 Without JavaScript, all product panels, conversation exchanges, questions and expandable answer discussions remain available. Scoring and persistence need JavaScript.
 
@@ -67,7 +67,7 @@ npm.cmd test
 
 An existing Chromium binary can be used by setting `PLAYWRIGHT_CHROMIUM_EXECUTABLE` to its path. This handover was tested with the installed Chromium browser using that override. Screenshots and failure traces go to `test-results/`.
 
-The checks cover all 16 assessment choices and supplied feedback, scores 0-4, out-of-order submission, answer locking, results, question review, retry, refresh, corrupted and blocked storage, all product/conversation states, keyboard controls, reduced motion, no-JavaScript content and local image loading. Responsive screenshots use 1440, 768, 390 and 320 pixel widths. Axe checks target WCAG A/AA rules at desktop/mobile and the submitted assessment state; they are not a substitute for a full assistive-technology audit.
+The checks cover all 16 assessment choices, exact supplied feedback, editable answers, response persistence, corrupted and blocked storage, all product/conversation states, keyboard controls, reduced motion, no-JavaScript content and local image loading. Responsive screenshots use 1440, 768, 390 and 320 pixel widths. Axe checks target WCAG A/AA rules at desktop/mobile and the answered assessment state; they are not a substitute for a full assistive-technology audit.
 
 The subpath build was also browser-verified. Reproduce it with `npm.cmd exec astro build -- --base /fabiani-luggage-quick-course/ --outDir ./dist-base`, then `node scripts/verify-base.mjs`. That script starts a temporary local static test server and closes it when finished.
 
