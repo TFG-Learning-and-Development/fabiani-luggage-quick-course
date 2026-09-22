@@ -16,7 +16,7 @@ import SectionHeading from './SectionHeading.astro';
         <span class="sr-only">Step {index + 1} of {conversation.length}</span>
         {step.turns.map(turn => <div class={`exchange ${turn.role}`}>
           <span class="avatar"><img src={asset(turn.role === 'employee' ? 'employee-avatar' : 'customer-avatar')} width={turn.role === 'employee' ? 336 : 282} height={turn.role === 'employee' ? 336 : 282} alt="" /></span>
-          <div><h3>{turn.role === 'employee' ? 'Store Employee' : 'Customer'}</h3><blockquote>&ldquo;{turn.text}&rdquo;</blockquote></div>
+          <div><h3>{turn.role === 'employee' ? 'Store Associate' : 'Customer'}</h3><blockquote>&ldquo;{turn.text}&rdquo;</blockquote></div>
         </div>)}
       </div>)}
     </div>

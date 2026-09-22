@@ -1,18 +1,44 @@
 ---
-import { ArrowRight } from '@lucide/astro';
+import { Check, ChevronDown, ChevronUp, RotateCcw } from '@lucide/astro';
 import { course } from '../content/course';
 import SectionHeading from './SectionHeading.astro';
+
+const initialConnections = [...course.features.rows].reverse();
 ---
 <section id="product-basics" class="section wrap" aria-labelledby="features-title" data-course-section>
   <SectionHeading id="features-title" title={course.features.title} introduction={course.features.introduction} />
-  <div class="benefits-head" aria-hidden="true"><span>Product feature</span><span></span><span>Functional benefit</span><span></span><span>Customer connection</span></div>
-  <div class="benefits-list">
-    {course.features.rows.map(row => <article class="benefit-row">
-      <div class="feature"><span class="mobile-label">Product feature</span><h3>{row.feature}</h3></div>
-      <ArrowRight class="connector" aria-hidden="true" />
-      <div class="functional"><span class="mobile-label">Functional benefit</span><p>{row.benefit}</p></div>
-      <ArrowRight class="connector" aria-hidden="true" />
-      <div class="connection"><span class="mobile-label">Customer connection</span><p>{row.connection}</p></div>
-    </article>)}
+  <div class="benefits-tool" data-benefits>
+    <p id="benefits-instruction" class="activity-instruction">{course.features.instruction}</p>
+    <div class="benefits-activity" data-benefits-activity hidden>
+      <div data-benefits-board aria-describedby="benefits-instruction">
+        <div class="benefits-match-head" aria-hidden="true"><span>Product feature</span><span>Functional benefit</span><span>Customer connection</span></div>
+        <ol class="benefits-sort-list" data-connection-list aria-label="Customer connections, reorder to match the product feature and functional benefit">
+          {course.features.rows.map((row, index) => {
+            const connection = initialConnections[index];
+            return <li class="benefit-sort-row" data-connection-slot={row.id}>
+              <div class="feature-cell"><span class="match-label">Product feature</span><h3>{row.feature}</h3></div>
+              <div class="functional-cell"><span class="match-label">Functional benefit</span><p>{row.benefit}</p></div>
+              <div class="connection-slot" data-connection-cell>
+                <article class="connection-card" data-connection-card={connection.id}>
+                  <p>{connection.connection}</p>
+                  <div class="ordering-controls">
+                    <button type="button" class="ordering-button" data-move-up aria-label={`Move customer connection for ${connection.feature} up`} title={`Move customer connection for ${connection.feature} up`}><ChevronUp size={17} aria-hidden="true" /></button>
+                    <button type="button" class="ordering-button" data-move-down aria-label={`Move customer connection for ${connection.feature} down`} title={`Move customer connection for ${connection.feature} down`}><ChevronDown size={17} aria-hidden="true" /></button>
+                  </div>
+                </article>
+              </div>
+            </li>;
+          })}
+        </ol>
+        <div class="benefits-controls">
+          <button type="button" class="match-button" data-benefits-check><Check size={18} aria-hidden="true" />Check matches</button>
+          <button type="button" class="match-reset" data-benefits-reset><RotateCcw size={18} aria-hidden="true" />Reset</button>
+        </div>
+        <p class="benefits-feedback" data-benefits-feedback role="status" tabindex="-1" hidden></p>
+      </div>
+    </div>
+    <noscript><div class="benefits-reference">
+      {course.features.rows.map(row => <article><h3>{row.feature}</h3><p><strong>Functional benefit:</strong> {row.benefit}</p><p><strong>Customer connection:</strong> {row.connection}</p></article>)}
+    </div></noscript>
   </div>
 </section>

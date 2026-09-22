@@ -18,6 +18,8 @@ import SectionHeading from './SectionHeading.astro';
           {item.imageCaption && <figcaption>{item.imageCaption}</figcaption>}
         </figure>
         <div class="case-copy">
+          <h4>Dimensions and capacity</h4>
+          <p class="case-dimensions">{item.dimensions.map(dimension => <span>{dimension}</span>)}</p>
           <h4>Best suited to</h4><p>{item.suited}</p>
           <h4>Selling story</h4><p>{item.story}</p>
         </div>

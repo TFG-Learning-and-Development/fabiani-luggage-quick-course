@@ -108,22 +108,47 @@ button, a, input, summary { touch-action: manipulation; }
 .case-copy h4 { margin: 22px 0 8px; }
 .case-copy h4:first-child { margin-top: 0; }
 .case-copy p { font-size: var(--body-size); line-height: 1.2; color: #efeded; }
+.case-dimensions span { display: block; }
 .case-panel + .case-panel { margin-top: 30px; }
 .range-tool[data-enhanced] .case-panel { margin-top: 0; }
 .important { display: flex; gap: 20px; text-align: left; align-items: center; padding-block: 24px; margin-top: 18px; }
 .important > svg { color: var(--gold-light); }
 .important h3 { font-size: 32px; margin-bottom: 4px; }
-.benefits-head, .benefit-row { display: grid; grid-template-columns: 1fr 40px 1fr 40px 1.15fr; align-items: stretch; }
-.benefits-head { font-weight: 700; text-align: center; margin-bottom: 18px; }
-.benefits-list { display: grid; gap: 12px; }
-.benefit-row > div { padding: 22px; border-radius: var(--panel-radius); display: flex; justify-content: center; flex-direction: column; text-align: center; min-height: 112px; }
-.benefit-row h3, .benefit-row p { font-size: var(--body-size); font-weight: 400; line-height: 1.2; }
-.benefit-row .feature { background: white; }
-.benefit-row .feature h3 { font-weight: 700; }
-.benefit-row .functional { background: var(--gold); color: #17140d; }
-.benefit-row .connection { background: white; border: 1px solid var(--line); }
-.connector { color: var(--black); align-self: center; justify-self: center; width: 22px; }
-.mobile-label { display: none; }
+.benefits-tool { background: #efeeee; border: 1px solid #e3e0de; border-radius: var(--panel-radius); padding: 30px; }
+.benefits-tool > .activity-instruction { margin: 0 auto 24px; }
+.benefits-match-head, .benefit-sort-row { display: grid; grid-template-columns: .7fr 1fr 1.25fr; gap: 14px; }
+.benefits-match-head { color: var(--gold-text); font-size: 15px; font-weight: 700; padding: 0 16px 10px; }
+.benefits-sort-list { display: grid; gap: 12px; padding: 0; margin: 0; list-style: none; }
+.benefit-sort-row { min-width: 0; align-items: stretch; }
+.feature-cell, .functional-cell, .connection-card { min-width: 0; padding: 22px; border-radius: var(--panel-radius); display: flex; justify-content: center; flex-direction: column; text-align: center; min-height: 112px; }
+.feature-cell { background: white; }
+.feature-cell h3, .functional-cell p, .connection-card p { font-size: var(--body-size); line-height: 1.2; }
+.feature-cell h3 { font-weight: 700; }
+.functional-cell { background: var(--gold); color: #17140d; }
+.match-label { display: none; }
+.connection-slot { min-width: 0; }
+.connection-card { position: relative; height: 100%; border: 1px solid var(--line); background: white; }
+.connection-card p { padding-right: 38px; }
+.ordering-controls { position: absolute; right: 8px; top: 50%; display: flex; flex-direction: column; gap: 2px; transform: translateY(-50%); }
+.ordering-button { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; padding: 0; border: 1px solid #a8a19b; border-radius: 4px; background: white; color: var(--ink); cursor: pointer; }
+.ordering-button:hover:not(:disabled) { border-color: var(--gold-text); background: #f5f1e6; }
+.ordering-button:disabled { cursor: not-allowed; opacity: .38; }
+[data-connection-slot][data-outcome='correct'] .connection-card { border-color: var(--green); background: #edf4ef; }
+[data-connection-slot][data-outcome='incorrect'] .connection-card { border-color: var(--red); background: #f9eeee; }
+.benefits-controls { display: flex; align-items: center; gap: 12px; margin-top: 22px; }
+.match-button, .match-reset { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 10px 16px; border-radius: 5px; font: inherit; font-weight: 700; cursor: pointer; }
+.match-button { border: 1px solid var(--gold); background: var(--black); color: white; }
+.match-button:hover:not(:disabled) { filter: brightness(1.16); }
+.match-button:disabled { cursor: not-allowed; opacity: .5; }
+.match-reset { border: 1px solid #a8a19b; background: white; color: var(--ink); }
+.match-reset:hover { border-color: var(--gold-text); }
+.benefits-feedback { margin: 20px 0 0; padding: 16px; border: 1px solid; border-radius: 5px; font-size: var(--body-size); line-height: 1.2; }
+.benefits-feedback[data-outcome='correct'] { border-color: var(--green); background: #edf4ef; color: #17452d; }
+.benefits-feedback[data-outcome='incorrect'] { border-color: var(--red); background: #f9eeee; color: #6d2521; }
+.benefits-reference { display: grid; gap: 12px; }
+.benefits-reference article { padding: 20px; border: 1px solid var(--line); border-radius: var(--radius); background: white; }
+.benefits-reference h3 { font-size: var(--body-size); margin-bottom: 10px; }
+.benefits-reference p + p { margin-top: 8px; }
 .selling-section { padding-top: 16px; }
 .selling-layout { display: grid; grid-template-columns: .75fr 1.25fr; gap: 48px; align-items: center; }
 .selling-photos { position: relative; min-height: 660px; }
@@ -207,7 +232,9 @@ summary { cursor: pointer; }
   .selling-photos { min-height: 740px; }
   .selling-photos img { width: 95%; }
   .selling-photos img:last-child { width: 93%; }
-  .benefit-row > div { padding: 18px; }
+  .benefits-tool { padding: 24px; }
+  .benefits-match-head, .benefit-sort-row { grid-template-columns: .72fr 1fr 1.15fr; gap: 10px; }
+  .feature-cell, .functional-cell, .connection-card { padding: 18px; }
   .question-panel { gap: 26px; }
 }
 @media (max-width: 800px) {
@@ -235,10 +262,11 @@ summary { cursor: pointer; }
   .selling-photos { display: grid; grid-template-columns: 1fr 1fr; min-height: 0; gap: 18px; }
   .selling-photos img, .selling-photos img:last-child { position: static; width: 100%; height: 310px; border: 0; }
   .selling-relationship > div { padding: 24px; }
-  .benefits-head, .benefit-row { grid-template-columns: 1fr 26px 1fr 26px 1.1fr; }
-  .benefits-head { font-size: 13px; }
-  .benefit-row > div { padding: 15px; }
-  .connector { width: 18px; }
+  .benefits-match-head, .benefit-sort-row { grid-template-columns: .7fr 1fr 1.15fr; gap: 8px; }
+  .benefits-match-head { padding-inline: 12px; font-size: 13px; }
+  .feature-cell, .functional-cell, .connection-card { padding: 15px; min-height: 124px; }
+  .feature-cell h3, .functional-cell p, .connection-card p { font-size: 15px; }
+  .connection-card p { padding-inline: 20px; }
   .conversation-tool { padding: 24px; }
   .conversation-tool[data-enhanced] .conversation-content { min-height: 415px; }
   .exchange { max-width: 100%; }
@@ -280,13 +308,21 @@ summary { cursor: pointer; }
   .case-panel figcaption { text-align: center; }
   .case-copy h4 { margin-top: 20px; }
   .important { gap: 12px; align-items: flex-start; padding: 20px; }
-  .benefits-head { display: none; }
-  .benefits-list { gap: 22px; }
-  .benefit-row { display: block; background: white; border: 1px solid var(--line); border-radius: var(--panel-radius); padding: 0 20px; }
-  .benefit-row > div { background: none !important; border: 0 !important; border-radius: 0; min-height: 0; text-align: left; padding: 18px 0; }
-  .benefit-row > div + svg + div { border-top: 1px solid #e8e4d8 !important; }
-  .benefit-row .connector { display: none; }
-  .mobile-label { display: block; font-size: 16px; color: var(--gold-text); font-weight: 700; margin-bottom: 7px; }
+  .benefits-tool { padding: 20px 14px; }
+  .benefits-match-head { display: none; }
+  .benefits-sort-list { gap: 22px; }
+  .benefit-sort-row { grid-template-columns: 1fr; gap: 0; }
+  .feature-cell, .functional-cell, .connection-card { min-height: 0; text-align: left; border-radius: 0; padding: 18px; }
+  .feature-cell { border: 1px solid var(--line); border-radius: var(--panel-radius) var(--panel-radius) 0 0; }
+  .functional-cell { border-radius: 0; }
+  .connection-card { border-radius: 0 0 var(--panel-radius) var(--panel-radius); }
+  .feature-cell h3, .functional-cell p, .connection-card p { font-size: 16px; }
+  .match-label { display: block; color: var(--gold-text); font-size: 14px; font-weight: 700; }
+  .functional-cell .match-label { color: #17140d; }
+  .connection-card p { padding: 0 48px 0 0; }
+  .ordering-controls { right: 10px; }
+  .benefits-controls { align-items: stretch; flex-direction: column; }
+  .match-button, .match-reset { width: 100%; }
   .selling-section { padding-top: 8px; }
   .selling-photos { gap: 10px; }
   .selling-photos img, .selling-photos img:last-child { height: 230px; }

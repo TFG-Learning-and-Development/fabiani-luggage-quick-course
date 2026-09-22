@@ -6,10 +6,15 @@ import { config } from '../src/config';
 const start = async (page: Page) => {
   await page.goto('./');
   await expect(page.locator('[data-assessment]')).toHaveAttribute('data-enhanced', 'true');
+  await expect(page.locator('[data-benefits]')).toHaveAttribute('data-enhanced', 'true');
 };
 const answer = async (page: Page, index: number, option: number) => {
   await page.locator(`[data-question="${index}"] .answer-option`).nth(option).click();
 };
+const overflowingElements = async (page: Page) => page.evaluate(() => [...document.querySelectorAll<HTMLElement>('body *')].filter(element => {
+  const box = element.getBoundingClientRect();
+  return box.width > 0 && (box.right > innerWidth + 1 || box.left < -1) && getComputedStyle(element).position !== 'fixed';
+}).map(element => `${element.tagName}.${element.className}`));
 const suppliedFeedback = [
   {
     correct: 'Correct. A two-night business trip needs a refined, easy-to-move case for essentials. The cabin case supports organised packing and a polished Fabiani look.',
@@ -24,8 +29,8 @@ const suppliedFeedback = [
     incorrect: 'Incorrect. Review the trip length and packing need. A short-trip case will not give the Customer enough space for a two-week international journey.',
   },
   {
-    correct: 'Correct. The Customer’s main need is movement. Easy mobility is the strongest benefit because it helps the Customer move through travel environments more easily while keeping a refined look.',
-    incorrect: 'Incorrect. Review the Customer’s main need. The scenario focuses on movement through airports, hotels and city meetings, not extra space, occasionwear protection or buying more than one case.',
+    correct: 'Correct. Easy mobility is the strongest first focus because the Customer needs practical support while moving between airports, hotels and city meetings. You can also connect the TSA-approved lock to secure travel where applicable, and the USB port to keeping a device charged using the Customer’s own power bank.',
+    incorrect: 'Incorrect. Review the Customer’s main needs. The scenario focuses on movement, safe storage and staying connected while travelling, not extra space, occasionwear protection or buying more than one case.',
   },
 ];
 
@@ -34,9 +39,7 @@ test('all supplied instructional content and local assets render', async ({ page
   page.on('pageerror', error => errors.push(error.message));
   await start(page);
   for (const paragraph of course.overview.paragraphs) await expect(page.getByText(paragraph, { exact: true })).toBeVisible();
-  for (const row of course.features.rows) {
-    for (const text of Object.values(row)) await expect(page.getByText(text, { exact: true })).toBeVisible();
-  }
+  for (const row of course.features.rows) await expect(page.locator(`[data-connection-slot="${row.id}"]`).getByText(row.feature, { exact: true })).toBeVisible();
   for (const step of course.selling.steps) {
     await expect(page.getByText(step.action, { exact: true })).toBeVisible();
     await expect(page.getByText(step.benefit, { exact: true })).toBeVisible();
@@ -84,6 +87,41 @@ test('all four product tabs and keyboard boundaries work', async ({ page }) => {
   await expect(tabs.last()).toBeFocused();
   await tabs.last().press('ArrowDown');
   await expect(tabs.first()).toBeFocused();
+});
+
+test('customer connection activity supports ordering and editable feedback', async ({ page }) => {
+  await start(page);
+  const activity = page.locator('[data-benefits]');
+  const slots = activity.locator('[data-connection-slot]');
+  const check = activity.getByRole('button', { name: 'Check matches', exact: true });
+  const usbCard = activity.locator('[data-connection-card="usb-port"]');
+  await usbCard.getByRole('button', { name: /Move customer connection .* up/ }).click();
+  const usbBox = await usbCard.boundingBox();
+  const functionalBox = await activity.locator('[data-connection-slot="lightweight"] .functional-cell').boundingBox();
+  expect(usbBox!.x).toBeGreaterThan(functionalBox!.x + functionalBox!.width);
+  await activity.getByRole('button', { name: 'Reset', exact: true }).click();
+
+  await page.setViewportSize({ width: 320, height: 740 });
+  await check.click();
+  await expect(activity.locator('[data-benefits-feedback]')).toHaveText(`You have 0 of ${course.features.rows.length} correct Customer connections. Review the highlighted cards and try again.`);
+  await expect(activity.locator('[data-connection-slot][data-outcome="incorrect"]')).toHaveCount(course.features.rows.length);
+  await expect(activity.locator('[data-connection-slot][data-outcome="incorrect"] .connection-card').first()).toHaveCSS('background-color', 'rgb(249, 238, 238)');
+
+  for (const row of course.features.rows) {
+    const card = activity.locator(`[data-connection-card="${row.id}"]`);
+    while (await card.locator('xpath=ancestor::li[@data-connection-slot]').getAttribute('data-connection-slot') !== row.id) {
+      await card.getByRole('button', { name: /Move customer connection .* up/ }).dispatchEvent('click');
+    }
+  }
+  await check.click();
+  await expect(activity.locator('[data-benefits-feedback]')).toHaveText('Correct. You have aligned every Customer connection with its feature and functional benefit.');
+  await expect(activity.locator('[data-connection-slot][data-outcome="correct"]')).toHaveCount(course.features.rows.length);
+  expect(await overflowingElements(page)).toEqual([]);
+  await activity.screenshot({ path: 'test-results/mobile-benefits-reordered.png' });
+
+  await activity.getByRole('button', { name: 'Reset', exact: true }).click();
+  await expect(slots.first().locator('[data-connection-card]')).toHaveAttribute('data-connection-card', 'luggage-tag');
+  await expect(activity.locator('[data-benefits-feedback]')).toBeHidden();
 });
 
 test('conversation preserves supplied exchange and traverses all four steps', async ({ page }) => {
@@ -212,11 +250,7 @@ for (const viewport of [{ width: 1440, height: 1000 }, { width: 768, height: 102
       await expect(page.locator('#course-navigation')).toBeHidden();
       await expect(toggle).toBeFocused();
     }
-    const overflow = await page.evaluate(() => [...document.querySelectorAll<HTMLElement>('body *')].filter(element => {
-      const box = element.getBoundingClientRect();
-      return box.width > 0 && (box.right > innerWidth + 1 || box.left < -1) && getComputedStyle(element).position !== 'fixed';
-    }).map(element => `${element.tagName}.${element.className}`));
-    expect(overflow).toEqual([]);
+    expect(await overflowingElements(page)).toEqual([]);
     await page.screenshot({ path: `test-results/course-${viewport.width}.png`, fullPage: true });
     await page.screenshot({ path: `test-results/first-viewport-${viewport.width}.png` });
     for (const tab of await page.getByRole('tab').all()) await tab.click();
@@ -235,6 +269,7 @@ test('no-JavaScript fallback exposes all teaching, panels, exchanges and questio
   await expect(page.locator('[data-case]:visible')).toHaveCount(4);
   await expect(page.locator('[data-conversation-step]:visible')).toHaveCount(4);
   await expect(page.locator('[data-question]:visible')).toHaveCount(questions.length);
+  await expect(page.locator('.benefits-reference article')).toHaveCount(course.features.rows.length);
   await expect(page.getByText('Answer discussion', { exact: true })).toHaveCount(questions.length);
   await expect(page.locator('.range-selectors')).toBeHidden();
   await expect(page.locator('.assessment-controls')).toBeHidden();
@@ -262,7 +297,11 @@ test('long mobile states stay within the viewport', async ({ page }) => {
   await start(page);
   for (const tab of await page.getByRole('tab').all()) {
     await tab.click();
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    const overflow = await page.evaluate(() => [...document.querySelectorAll<HTMLElement>('body *')].filter(element => {
+      const box = element.getBoundingClientRect();
+      return box.width > 0 && (box.right > innerWidth + 1 || box.left < -1) && getComputedStyle(element).position !== 'fixed';
+    }).map(element => `${element.tagName}.${element.className}`));
+    expect(overflow).toEqual([]);
   }
   await page.locator('#product-range').screenshot({ path: 'test-results/mobile-range.png' });
   await page.locator('#product-basics').screenshot({ path: 'test-results/mobile-benefits.png' });
@@ -278,7 +317,7 @@ test('long mobile states stay within the viewport', async ({ page }) => {
   }
   for (let index = 0; index < questions.length; index++) {
     await answer(page, index, (questions[index].correct + 1) % questions[index].answers.length);
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    expect(await overflowingElements(page)).toEqual([]);
     if (index === 0) {
       await expect(page.locator('[data-feedback="0"]')).toHaveAttribute('data-outcome', 'incorrect');
       const feedback = (await page.locator('[data-feedback="0"]').boundingBox())!;

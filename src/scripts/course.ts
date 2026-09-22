@@ -54,6 +54,75 @@ function initRange() {
   root.dataset.enhanced = 'true';
 }
 
+function initBenefits() {
+  const root = get('[data-benefits]');
+  const activity = get<HTMLElement>('[data-benefits-activity]', root);
+  const slots = all<HTMLElement>('[data-connection-slot]', root);
+  const cells = all<HTMLElement>('[data-connection-cell]', root);
+  const check = get<HTMLButtonElement>('[data-benefits-check]', root);
+  const reset = get<HTMLButtonElement>('[data-benefits-reset]', root);
+  const feedback = get<HTMLElement>('[data-benefits-feedback]', root);
+  const initialOrder = all<HTMLElement>('[data-connection-card]', root).map(card => card.dataset.connectionCard!);
+  const cards = () => all<HTMLElement>('[data-connection-card]', root);
+  const clearFeedback = () => {
+    slots.forEach(slot => slot.removeAttribute('data-outcome'));
+    feedback.hidden = true;
+    feedback.removeAttribute('data-outcome');
+  };
+  const updateOrderingControls = () => cards().forEach((card, index, list) => {
+    get<HTMLButtonElement>('[data-move-up]', card).disabled = index === 0;
+    get<HTMLButtonElement>('[data-move-down]', card).disabled = index === list.length - 1;
+  });
+  const swapCards = (first: HTMLElement, second: HTMLElement) => {
+    if (first === second) return;
+    const firstSlot = first.closest<HTMLElement>('[data-connection-cell]');
+    const secondSlot = second.closest<HTMLElement>('[data-connection-cell]');
+    if (!firstSlot || !secondSlot) return;
+    firstSlot.append(second);
+    secondSlot.append(first);
+    clearFeedback();
+    updateOrderingControls();
+  };
+  cards().forEach(card => {
+    get<HTMLButtonElement>('[data-move-up]', card).addEventListener('click', () => {
+      const index = cards().indexOf(card);
+      if (index > 0) swapCards(card, cards()[index - 1]);
+      card.focus();
+    });
+    get<HTMLButtonElement>('[data-move-down]', card).addEventListener('click', () => {
+      const index = cards().indexOf(card);
+      if (index < cards().length - 1) swapCards(card, cards()[index + 1]);
+      card.focus();
+    });
+  });
+  check.addEventListener('click', () => {
+    let matched = 0;
+    slots.forEach(slot => {
+      const card = get<HTMLElement>('[data-connection-card]', slot);
+      const correct = card.dataset.connectionCard === slot.dataset.connectionSlot;
+      slot.dataset.outcome = correct ? 'correct' : 'incorrect';
+      if (correct) matched++;
+    });
+    feedback.hidden = false;
+    feedback.dataset.outcome = matched === slots.length ? 'correct' : 'incorrect';
+    feedback.textContent = matched === slots.length
+      ? 'Correct. You have aligned every Customer connection with its feature and functional benefit.'
+      : `You have ${matched} of ${slots.length} correct Customer connections. Review the highlighted cards and try again.`;
+    feedback.focus({ preventScroll: true });
+  });
+  reset.addEventListener('click', () => {
+    initialOrder.forEach((id, index) => {
+      const card = cards().find(item => item.dataset.connectionCard === id);
+      if (card) cells[index].append(card);
+    });
+    clearFeedback();
+    updateOrderingControls();
+  });
+  updateOrderingControls();
+  activity.hidden = false;
+  root.dataset.enhanced = 'true';
+}
+
 function initConversation() {
   const root = get('[data-conversation]');
   const steps = all('[data-conversation-step]', root);
@@ -194,6 +263,7 @@ function initNavigation() {
 }
 
 initRange();
+initBenefits();
 initConversation();
 initAssessment();
 initNavigation();
