@@ -32,8 +32,10 @@ export const course = {
     title: 'The Art of Travel',
     introduction: 'Fabiani luggage should feel like a natural continuation of the Fabiani wardrobe. It is crafted for the modern traveller who needs to move with ease, protect their clothing and arrive looking polished.',
     flow: ['Journey', 'Wardrobe', 'Luggage', 'Benefit'],
+    questionsHeading: 'Here are a few examples of questions you could ask to build rapport:',
     questions: [
-      'Where are you travelling to, and how long will you be away?',
+      'Where are you travelling to?',
+      'How long will you be away?',
       'What will you need to pack for the trip?',
       'How do you want to arrive: light, organised, polished or prepared for different moments?',
     ],
@@ -49,7 +51,7 @@ export const course = {
   features: {
     title: 'Turn features into Customer benefits',
     introduction: 'Connect each feature to what it helps the Customer do during travel.',
-    instruction: 'Reorder the Customer connection cards so each one aligns with the feature and functional benefit it supports.',
+    instruction: 'Use the arrows on each Customer connection card to match it with the Product features and benefits. When every card is in the correct row, select Check matches.',
     rows: [
       { id: 'lightweight', feature: 'Lightweight construction', benefit: 'Easier to carry and manoeuvre.', connection: 'Useful for Customers moving between airports, transport, hotels and city environments.' },
       { id: 'durable', feature: 'Durable construction', benefit: 'Supports repeated use and helps protect the case over time.', connection: 'Relevant to frequent travellers who need luggage for multiple journeys.' },
@@ -144,10 +146,6 @@ const storyboardFeedback = {
     correct: 'Correct. The Customer needs space and organisation for formalwear, casualwear and footwear. The recommendation should support the occasion and help protect the Customer’s wardrobe.',
     incorrect: 'Incorrect. Review what the Customer needs to pack. The recommendation should not focus only on size or price. It should support wardrobe protection, space and organisation for the occasion.',
   },
-  international: {
-    correct: 'Correct. A two-week international trip needs more capacity than a short-trip option. The large case gives the Customer space for a fuller wardrobe, footwear, accessories and travel essentials.',
-    incorrect: 'Incorrect. Review the trip length and packing need. A short-trip case will not give the Customer enough space for a two-week international journey.',
-  },
   frequentTraveller: {
     correct: 'Correct. Easy mobility is the strongest first focus because the Customer needs practical support while moving between airports, hotels and city meetings. You can also connect the TSA-approved lock to secure travel where applicable, and the USB port to keeping a device charged using the Customer’s own power bank.',
     incorrect: 'Incorrect. Review the Customer’s main needs. The scenario focuses on movement, safe storage and staying connected while travelling, not extra space, occasionwear protection or buying more than one case.',
@@ -177,18 +175,6 @@ export const questions: Question[] = [
       { text: 'Recommend a medium case if the Customer wants flexibility, or a large case if they need more space for formalwear, casualwear and footwear.', feedback: storyboardFeedback.wedding.correct },
       { text: 'Recommend multiple cases because all occasion wear needs separate luggage.', feedback: storyboardFeedback.wedding.incorrect },
       { text: 'Recommend the case with the lowest price first.', feedback: storyboardFeedback.wedding.incorrect },
-    ],
-  },
-  {
-    id: 'international-holiday', source: 'supplied-storyboard', correct: 2,
-    scenarioTitle: 'Scenario 3: International holiday',
-    scenario: 'I am travelling overseas for two weeks and want enough space for different looks.',
-    prompt: 'Which case direction should you recommend?',
-    answers: [
-      { text: 'Recommend the small / cabin case because it keeps the Customer travelling light.', feedback: storyboardFeedback.international.incorrect },
-      { text: 'Recommend the medium case because it works for every trip.', feedback: storyboardFeedback.international.incorrect },
-      { text: 'Recommend the large case because it gives the Customer generous space for a fuller wardrobe, footwear, accessories and travel essentials.', feedback: storyboardFeedback.international.correct },
-      { text: 'Recommend no case until the Customer confirms every outfit.', feedback: storyboardFeedback.international.incorrect },
     ],
   },
   {

@@ -43,8 +43,8 @@ import '../styles/course.css';
           <aside class="dark-note"><h3>Key message:</h3><p>{course.travel.keyMessage}</p></aside>
           <div class="customer-discovery">
             <div class="discovery-quote"><span class="avatar"><img src={asset('customer-avatar')} width="282" height="282" alt="" /></span><p>{course.travel.askIntroduction}</p></div>
-            <h3 class="discovery-heading">Ask three simple questions:</h3>
-            <ol class="discovery-questions">{course.travel.questions.map(question => <li><p>{question}</p></li>)}</ol>
+            <h3 class="discovery-heading">{course.travel.questionsHeading}</h3>
+            <ul class="discovery-questions">{course.travel.questions.map(question => <li><p>{question}</p></li>)}</ul>
           </div>
         </section>
       </div>

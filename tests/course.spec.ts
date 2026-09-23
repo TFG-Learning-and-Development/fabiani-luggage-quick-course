@@ -25,10 +25,6 @@ const suppliedFeedback = [
     incorrect: 'Incorrect. Review what the Customer needs to pack. The recommendation should not focus only on size or price. It should support wardrobe protection, space and organisation for the occasion.',
   },
   {
-    correct: 'Correct. A two-week international trip needs more capacity than a short-trip option. The large case gives the Customer space for a fuller wardrobe, footwear, accessories and travel essentials.',
-    incorrect: 'Incorrect. Review the trip length and packing need. A short-trip case will not give the Customer enough space for a two-week international journey.',
-  },
-  {
     correct: 'Correct. Easy mobility is the strongest first focus because the Customer needs practical support while moving between airports, hotels and city meetings. You can also connect the TSA-approved lock to secure travel where applicable, and the USB port to keeping a device charged using the Customer’s own power bank.',
     incorrect: 'Incorrect. Review the Customer’s main needs. The scenario focuses on movement, safe storage and staying connected while travelling, not extra space, occasionwear protection or buying more than one case.',
   },
