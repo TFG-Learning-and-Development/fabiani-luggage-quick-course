@@ -51,7 +51,7 @@ export const course = {
   features: {
     title: 'Turn features into Customer benefits',
     introduction: 'Connect each feature to what it helps the Customer do during travel.',
-    instruction: 'Use the arrows on each Customer connection card to match it with the Product features and benefits. When every card is in the correct row, select Check matches.',
+    instruction: 'Use the arrows on each Customer connection card until it matches the product feature and benefit in its row.',
     rows: [
       { id: 'lightweight', feature: 'Lightweight construction', benefit: 'Easier to carry and manoeuvre.', connection: 'Useful for Customers moving between airports, transport, hotels and city environments.' },
       { id: 'durable', feature: 'Durable construction', benefit: 'Supports repeated use and helps protect the case over time.', connection: 'Relevant to frequent travellers who need luggage for multiple journeys.' },

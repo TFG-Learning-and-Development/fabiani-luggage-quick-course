@@ -89,34 +89,42 @@ test('customer connection activity supports ordering and editable feedback', asy
   await start(page);
   const activity = page.locator('[data-benefits]');
   const slots = activity.locator('[data-connection-slot]');
-  const check = activity.getByRole('button', { name: 'Check matches', exact: true });
-  const usbCard = activity.locator('[data-connection-card="usb-port"]');
-  await usbCard.getByRole('button', { name: /Move customer connection .* up/ }).click();
-  const usbBox = await usbCard.boundingBox();
+  for (const row of course.features.rows) {
+    const options = JSON.parse(await activity.locator(`[data-connection-slot="${row.id}"] [data-connection-card]`).getAttribute('data-connection-options') || '[]') as { id: string }[];
+    expect(options).toHaveLength(4);
+    expect(options.map(option => option.id)).toContain(row.id);
+  }
+  const durableCard = activity.locator('[data-connection-slot="durable"] [data-connection-card]');
+  const firstInitialOption = await slots.first().locator('[data-connection-card]').getAttribute('data-connection-card');
+  await durableCard.getByRole('button', { name: 'Show previous Customer connection option' }).click();
+  const usbBox = await durableCard.boundingBox();
   const functionalBox = await activity.locator('[data-connection-slot="lightweight"] .functional-cell').boundingBox();
   expect(usbBox!.x).toBeGreaterThan(functionalBox!.x + functionalBox!.width);
+  await expect(durableCard.locator('xpath=ancestor::li[@data-connection-slot]')).toHaveAttribute('data-connection-slot', 'durable');
+  await expect(activity.locator('[data-connection-slot="durable"] [data-connection-card]')).not.toHaveAttribute('data-connection-card', 'usb-port');
   await activity.getByRole('button', { name: 'Reset', exact: true }).click();
 
   await page.setViewportSize({ width: 320, height: 740 });
-  await check.click();
-  await expect(activity.locator('[data-benefits-feedback]')).toHaveText(`You have 0 of ${course.features.rows.length} correct Customer connections. Review the highlighted cards and try again.`);
+  await durableCard.getByRole('button', { name: 'Show previous Customer connection option' }).dispatchEvent('click');
   await expect(activity.locator('[data-connection-slot][data-outcome="incorrect"]')).toHaveCount(course.features.rows.length);
   await expect(activity.locator('[data-connection-slot][data-outcome="incorrect"] .connection-card').first()).toHaveCSS('background-color', 'rgb(249, 238, 238)');
+  await expect(activity.locator('[data-connection-slot][data-outcome="incorrect"] [data-status-icon="incorrect"]').first()).toBeVisible();
+  await expect(activity.getByRole('button', { name: 'Check matches', exact: true })).toHaveCount(0);
 
   for (const row of course.features.rows) {
-    const card = activity.locator(`[data-connection-card="${row.id}"]`);
-    while (await card.locator('xpath=ancestor::li[@data-connection-slot]').getAttribute('data-connection-slot') !== row.id) {
-      await card.getByRole('button', { name: /Move customer connection .* up/ }).dispatchEvent('click');
+    const slot = activity.locator(`[data-connection-slot="${row.id}"] [data-connection-card]`);
+    while (await slot.getAttribute('data-connection-card') !== row.id) {
+      await slot.getByRole('button', { name: 'Show previous Customer connection option' }).dispatchEvent('click');
     }
   }
-  await check.click();
   await expect(activity.locator('[data-benefits-feedback]')).toHaveText('Correct. You have aligned every Customer connection with its feature and functional benefit.');
   await expect(activity.locator('[data-connection-slot][data-outcome="correct"]')).toHaveCount(course.features.rows.length);
+  await expect(activity.locator('[data-connection-slot][data-outcome="correct"] [data-status-icon="correct"]').first()).toBeVisible();
   expect(await overflowingElements(page)).toEqual([]);
   await activity.screenshot({ path: 'test-results/mobile-benefits-reordered.png' });
 
   await activity.getByRole('button', { name: 'Reset', exact: true }).click();
-  await expect(slots.first().locator('[data-connection-card]')).toHaveAttribute('data-connection-card', 'luggage-tag');
+  await expect(slots.first().locator('[data-connection-card]')).toHaveAttribute('data-connection-card', firstInitialOption!);
   await expect(activity.locator('[data-benefits-feedback]')).toBeHidden();
 });
 
